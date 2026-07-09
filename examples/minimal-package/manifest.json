@@ -1,6 +1,7 @@
 {
   "profile": "saf-t-extended-package",
   "profileVersion": "0.1-draft",
+  "conformanceLevel": "migration",
   "packageId": "example-999999999-2026",
   "createdAt": "2026-07-09T00:00:00Z",
   "exporter": {

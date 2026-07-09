@@ -7,6 +7,8 @@
   "required": [
     "profile",
     "packageId",
+    "profileVersion",
+    "conformanceLevel",
     "createdAt",
     "exporter",
     "company",
@@ -21,6 +23,9 @@
     "profileVersion": {
       "type": "string",
       "default": "0.1-draft"
+    },
+    "conformanceLevel": {
+      "enum": ["core", "complete-archive", "migration"]
     },
     "packageId": {
       "type": "string",
@@ -177,7 +182,7 @@
           "type": "string"
         },
         "documentType": {
-          "type": "string"
+          "$ref": "#/$defs/documentType"
         },
         "title": {
           "type": "string"
@@ -286,6 +291,38 @@
     "sha256": {
       "type": "string",
       "pattern": "^[a-f0-9]{64}$"
+    },
+    "documentType": {
+      "oneOf": [
+        {
+          "enum": [
+            "purchase-invoice",
+            "sales-invoice",
+            "receipt",
+            "voucher-attachment",
+            "bank-statement",
+            "payment-documentation",
+            "ehf-invoice",
+            "invoice-rendering",
+            "customer-contract",
+            "supplier-contract",
+            "engagement-letter",
+            "kyc-document",
+            "correspondence",
+            "board-document",
+            "system-report",
+            "import-log",
+            "export-log",
+            "employee-document",
+            "project-document",
+            "department-document"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^[a-z0-9.-]+\\.[a-z]{2,}:[a-z0-9][a-z0-9-]*$"
+        }
+      ]
     }
   }
 }

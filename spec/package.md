@@ -72,6 +72,8 @@ It should include:
 - known omissions
 
 See [manifest.schema.json](manifest.schema.json).
+See [document-types.md](document-types.md) for the initial document type
+registry.
 
 ## Linking Files to SAF-T
 
@@ -113,6 +115,10 @@ Each file should have a manifest entry with:
 - `mediaType`
 - `safTReferences`
 - optional `systemReferences`
+
+The `documentType` value should come from the registry unless no suitable value
+exists. Unknown values should be treated as draft extension proposals, not as
+private permanent labels.
 
 ## Non-Posting Documents
 

@@ -294,10 +294,7 @@
         "scope": {
           "enum": [
             "saf-t-xml",
-            "electronic-invoices",
-            "invoice-renderings",
-            "invoice-attachments",
-            "posting-attachments",
+            "posting-related-documents",
             "non-posting-documents",
             "master-data",
             "sidecar-objects"
@@ -319,10 +316,7 @@
         "scope": {
           "enum": [
             "saf-t-xml",
-            "electronic-invoices",
-            "invoice-renderings",
-            "invoice-attachments",
-            "posting-attachments",
+            "posting-related-documents",
             "non-posting-documents",
             "master-data",
             "sidecar-objects"

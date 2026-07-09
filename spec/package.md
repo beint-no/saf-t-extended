@@ -51,12 +51,16 @@ saf-t-extended-package/
     document-index.jsonl
 ```
 
-Required:
+Minimum valid export:
 
 - `manifest.json`
 - at least one `saf-t/*.xml` file
+- every file in the source system that relates directly to postings in the
+  SAF-T selection
 - every exported file listed in `manifest.json`
 - SHA-256 checksum for every listed file
+- structured omissions for posting-related files that are unavailable or cannot
+  be exported
 
 Standard directories:
 
@@ -65,7 +69,7 @@ Standard directories:
 - `files/postings/` for other files linked to postings, source documents or
   payment lines
 - `files/documents/` for accounting documents that are not directly linked to a
-  posting
+  posting and are included as recommended additions
 - `objects/` for sidecar object files that SAF-T does not express adequately
 
 ## Manifest
@@ -89,6 +93,42 @@ It should include:
 See [manifest.schema.json](manifest.schema.json).
 See [document-types.md](document-types.md) for the initial document type
 registry.
+
+## Minimum Scope
+
+The minimum package is a SAF-T export plus all posting-related files the source
+system has.
+
+Posting-related files include:
+
+- original EHF/Peppol invoice and credit note XML
+- PDF renderings of invoices and credit notes
+- attachments embedded in or associated with EHF/Peppol invoices
+- voucher attachments
+- receipt images
+- bank and payment documentation
+- other files needed to understand, verify or audit the postings in the SAF-T
+  file
+
+The minimum is deliberately practical. A vendor should be able to implement it
+without solving full migration of every master-data object first.
+
+If a posting-related file exists in the source system, it should be included. If
+it cannot be exported, the package should include a structured `knownOmissions`
+entry explaining the reason.
+
+## Recommended Additions
+
+The following are optional, but recommended when available and useful for the
+export purpose:
+
+- complete customer and supplier data through SAF-T optional fields
+- customer/supplier sidecar data only where SAF-T lacks a suitable field
+- employee sidecar data when employees are accounting dimensions or relevant to
+  archive, audit or migration
+- contracts, KYC/AML files, engagement letters and correspondence not tied to a
+  SAF-T posting
+- stable source-system identifiers and migration metadata
 
 ## EHF and Peppol Invoices
 
@@ -266,8 +306,6 @@ When deciding where data belongs:
 
 ## Open Questions
 
-- Should `objects/` use JSON Lines, CSV, Parquet or a mix?
-- Which document types should be standardized first?
 - How should open customer/supplier items be represented if they are
   insufficiently clear from SAF-T alone?
 - Should embedded EHF/Peppol attachments always be extracted as separate package

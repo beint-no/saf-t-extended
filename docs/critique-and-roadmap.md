@@ -20,9 +20,14 @@ The profile touches ledger data, attachments, contracts, KYC documents,
 employees, migration metadata and archive requirements. Too many variants would
 make it hard for vendors and importers to know what to implement.
 
-The draft should therefore keep one main package profile and use structured
-`completeness` and `knownOmissions` fields to explain what a source system could
-not provide.
+The draft should therefore define one minimum:
+
+- SAF-T XML
+- all posting-related files available in the source system
+- manifest links and checksums
+- structured omissions
+
+Everything else should be recommended, not required for the minimum.
 
 ### Sidecars can become a dumping ground
 
@@ -142,7 +147,21 @@ The profile should be tested against exports from several accounting systems.
 The purpose is not to publish customer data, but to discover which data is
 actually available, missing or hard to map.
 
-### 8. Governance
+### 8. Vendor outreach
+
+Accounting-system vendors should be invited to implement the minimum export and
+to give feedback before the profile is treated as stable.
+
+The outreach should emphasize:
+
+- low implementation threshold
+- good PR for early implementers
+- customer trust and lower switching friction
+- alignment with SAF-T, EHF and Peppol rather than a competing format
+- a chance to shape the baseline before journalists, customers or authorities
+  use it as a public comparison point
+
+### 9. Governance
 
 If vendors, accountants, auditors or authorities engage with the draft, the
 repository needs a lightweight governance model:

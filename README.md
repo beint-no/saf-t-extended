@@ -56,19 +56,37 @@ checksums, attachments, document links and limited sidecar data.
 If official SAF-T Financial defines a suitable field or structure, exporters
 should use that structure instead of inventing a parallel sidecar format.
 
-## Package Contents
+## Minimum Valid Export
 
-A complete export package should contain:
+The minimum valid export is intentionally small enough for accounting-system
+vendors to adopt:
+
+1. official SAF-T Financial XML for the selected period and scope
+2. all files in the source system that relate directly to postings in that
+   SAF-T export
+3. a manifest that lists those files, links them to SAF-T references where
+   possible and includes checksums
+4. structured omissions for posting-related files that are unavailable or cannot
+   be exported
+
+Posting-related files include original EHF/Peppol invoice and credit note XML,
+invoice PDFs/renderings, embedded invoice attachments, voucher attachments,
+receipts, bank/payment documentation and other files needed to understand the
+postings in the SAF-T file.
+
+Everything beyond that minimum is optional, but recommended when the source
+system has the data and the export purpose requires it.
+
+## Recommended Additions
+
+Recommended additions include:
 
 | Area | Requirement |
 | --- | --- |
-| Ledger and SAF-T master data | Official SAF-T Financial XML files for the selected period and scope. |
-| Electronic invoices | Original EHF/Peppol invoice and credit note XML when available. |
-| Invoice renderings and attachments | PDFs, embedded invoice attachments and other files linked to the original electronic invoice and SAF-T references. |
-| Posting attachments | Files linked to postings, vouchers, payments or SAF-T SourceDocuments. |
-| Non-posting accounting documents | Relevant accounting documents that are not directly tied to a posting. |
-| Manifest | A machine-readable package index with checksums, document types, SAF-T references and known omissions. |
-| Optional sidecar objects | Extra object files only when SAF-T cannot represent the data clearly or safely. |
+| Customer and supplier master data | Complete use of available SAF-T customer and supplier fields, with sidecars only for data SAF-T cannot represent. |
+| Employee information | Minimal employee sidecar data when employees are used as accounting dimensions or needed for archive, audit or migration. |
+| Non-posting accounting documents | Contracts, KYC/AML documents, engagement letters, correspondence and other relevant documents not tied directly to a posting. |
+| Migration metadata | Stable source-system identifiers and sidecar objects needed by a receiving system. |
 
 See [spec/package.md](spec/package.md) and
 [spec/manifest.schema.json](spec/manifest.schema.json).
@@ -83,7 +101,9 @@ python3 tools/validate-package.py examples/minimal-package
 
 It checks that the manifest parses, referenced files exist, checksums match,
 document types are registered, file IDs are unique, linked file IDs exist, and
-EHF/Peppol invoice metadata matches the XML root and core fields.
+EHF/Peppol invoice metadata matches the XML root and core fields. It also
+requires completeness statements for SAF-T XML and posting-related documents,
+which are the minimum export baseline.
 
 ## EHF and Peppol Invoices
 
@@ -129,6 +149,10 @@ The package should include only data needed for the selected purpose, and should
 make omissions explicit. Sensitive fields such as national identity numbers,
 private addresses, health data, payroll details and bank account details should
 not be included unless there is a clear legal, audit or migration need.
+
+The minimum valid export focuses on posting-related accounting evidence. Broader
+employee, customer, supplier, contract and migration data should be included only
+when useful for the export purpose.
 
 ## Out of Scope
 

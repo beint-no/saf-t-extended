@@ -33,10 +33,7 @@ DOCUMENT_TYPES = {
 
 COMPLETENESS_SCOPES = {
     "saf-t-xml",
-    "electronic-invoices",
-    "invoice-renderings",
-    "invoice-attachments",
-    "posting-attachments",
+    "posting-related-documents",
     "non-posting-documents",
     "master-data",
     "sidecar-objects",
@@ -240,8 +237,16 @@ def validate_completeness(manifest, errors):
 
     if "saf-t-xml" not in seen_scopes:
         errors.append("manifest.completeness must include scope saf-t-xml")
-    if "electronic-invoices" not in seen_scopes:
-        errors.append("manifest.completeness must include scope electronic-invoices")
+    if "posting-related-documents" not in seen_scopes:
+        errors.append("manifest.completeness must include scope posting-related-documents")
+
+    omission_scopes = {omission.get("scope") for omission in manifest.get("knownOmissions", []) if isinstance(omission, dict)}
+    for statement in statements:
+        if statement.get("status") in {"partial", "not_available"} and statement.get("scope") not in omission_scopes:
+            errors.append(
+                f"manifest.completeness scope {statement.get('scope')!r} is {statement.get('status')!r} "
+                "but knownOmissions has no matching scope"
+            )
 
 
 def validate_known_omissions(manifest, errors):

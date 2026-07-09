@@ -118,14 +118,9 @@
       "note": "The package contains the available SAF-T XML export for the selected period."
     },
     {
-      "scope": "electronic-invoices",
+      "scope": "posting-related-documents",
       "status": "complete",
-      "note": "The example includes one original EHF invoice XML and a linked PDF rendering."
-    },
-    {
-      "scope": "posting-attachments",
-      "status": "not_applicable",
-      "note": "This minimal example does not include additional voucher attachments."
+      "note": "The example includes one original EHF invoice XML and a linked PDF rendering as posting-related documents."
     }
   ],
   "knownOmissions": []

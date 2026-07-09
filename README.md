@@ -115,6 +115,11 @@ A practical proof is a sample package that passes the validator and contains
 SAF-T XML plus all posting-related files available in the source system for the
 selected scope.
 
+## Feedback
+
+Technical feedback on the minimum export package can be added to
+[issue #1](https://github.com/beint-no/saf-t-extended/issues/1).
+
 ## Privacy and Security
 
 Accounting exports can contain personal data, confidential business documents

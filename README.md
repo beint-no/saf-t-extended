@@ -15,7 +15,8 @@ usable export from an accounting system.
 
 Accounting records commonly depend on files and objects outside the ledger XML:
 
-- invoice PDFs and original invoice files
+- original EHF/Peppol invoice and credit note XML
+- invoice PDFs and other human-readable renderings
 - receipt images and voucher attachments
 - bank, payment and import documentation
 - customer, supplier and project documents
@@ -32,7 +33,7 @@ The goal is a complete, auditable export package that can be produced by one
 accounting system and read by another system, auditor, accountant, customer or
 authority without private knowledge of the exporting vendor's database.
 
-A conforming export should make it possible to answer:
+A valid export should make it possible to answer:
 
 - which SAF-T files are included?
 - which attachments belong to which postings, invoices, payments or other
@@ -62,7 +63,9 @@ A complete export package should contain:
 | Area | Requirement |
 | --- | --- |
 | Ledger and SAF-T master data | Official SAF-T Financial XML files for the selected period and scope. |
-| Posting attachments | Files linked to postings, vouchers, invoices, payments or SAF-T SourceDocuments. |
+| Electronic invoices | Original EHF/Peppol invoice and credit note XML when available. |
+| Invoice renderings and attachments | PDFs, embedded invoice attachments and other files linked to the original electronic invoice and SAF-T references. |
+| Posting attachments | Files linked to postings, vouchers, payments or SAF-T SourceDocuments. |
 | Non-posting accounting documents | Relevant accounting documents that are not directly tied to a posting. |
 | Manifest | A machine-readable package index with checksums, document types, SAF-T references and known omissions. |
 | Optional sidecar objects | Extra object files only when SAF-T cannot represent the data clearly or safely. |
@@ -79,8 +82,29 @@ python3 tools/validate-package.py examples/minimal-package
 ```
 
 It checks that the manifest parses, referenced files exist, checksums match,
-the conformance level is known, and document types are registered or clearly
-namespaced extension values.
+document types are registered, file IDs are unique, linked file IDs exist, and
+EHF/Peppol invoice metadata matches the XML root and core fields.
+
+## EHF and Peppol Invoices
+
+When an invoice or credit note exists as EHF Billing 3.0 or Peppol BIS Billing
+3.0 XML, the original XML should be exported as the primary invoice evidence.
+
+PDFs should be exported as renderings of the structured invoice, not as a
+replacement for the original XML. Attachments embedded in or associated with an
+EHF/Peppol invoice should be extracted as ordinary files and linked back to the
+original invoice file in the manifest.
+
+The manifest should identify:
+
+- invoice or credit note
+- EHF/Peppol standard
+- UBL document type
+- invoice or credit note ID
+- issue date
+- CustomizationID and ProfileID
+- seller and buyer organization numbers when available
+- related PDF renderings and extracted attachments
 
 ## Master Data Policy
 
@@ -95,18 +119,6 @@ Employee master data is different. SAF-T can represent employees as accounting
 dimensions when they are used that way, but it is not a general HR export
 format. Employee data should therefore be optional, minimized and exported as a
 sidecar only when needed for archive, audit or migration.
-
-## Conformance Levels
-
-The draft uses three intended conformance levels:
-
-| Level | Purpose | Contents |
-| --- | --- | --- |
-| Core | Minimum portable ledger export | SAF-T XML and manifest. |
-| Complete Archive | Accounting archive and audit use | Core plus posting attachments, non-posting accounting documents, checksums and completeness statements. |
-| Migration | Moving between accounting systems | Complete Archive plus stable source-system references and carefully scoped sidecar objects. |
-
-See [spec/conformance.md](spec/conformance.md).
 
 ## Privacy and Security
 
@@ -135,10 +147,9 @@ The most important unresolved questions are:
 - which document types should be standardized first?
 - how should open customer and supplier items be represented when SAF-T is not
   sufficient in practice?
-- should original EHF/Peppol XML be required when available, in addition to
-  rendered PDFs?
+- how much EHF/Peppol metadata should be repeated in the manifest instead of
+  only being read from the original XML?
 - how should package signing and tamper evidence work?
-- should there be separate legal profiles for archive, audit and migration?
 
 See [docs/critique-and-roadmap.md](docs/critique-and-roadmap.md) for current
 critique and improvement ideas.
@@ -151,3 +162,5 @@ documentation and schemas published by the Norwegian Tax Administration:
 - https://www.skatteetaten.no/en/business-and-organisation/start-and-run/best-practices-accounting-and-cash-register-systems/saf-t-financial/
 - https://www.skatteetaten.no/en/business-and-organisation/start-and-run/best-practices-accounting-and-cash-register-systems/saf-t-financial/documentation/
 - https://github.com/Skatteetaten/saf-t
+- https://anskaffelser.dev/postaward/g3/spec/current/billing-3.0/norway/
+- https://docs.peppol.eu/poacc/billing/3.0/bis/

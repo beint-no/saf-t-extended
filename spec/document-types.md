@@ -14,11 +14,11 @@ only when they improve archive, audit, inspection or migration.
 
 Each file listed in `manifest.json` must have a `documentType`.
 
-Exporters should use a registered document type when one exists.
+Exporters must use a registered document type.
 
-If no registered value fits, exporters may use an extension value prefixed by
-their domain, for example `example.com:custom-report`. Extension values should
-be proposed for standardization if they are useful across systems.
+If no registered value fits, the registry should be expanded. The purpose of
+this profile is to standardize common accounting export content, not to preserve
+private labels from each accounting system.
 
 ## Posting-Linked Documents
 
@@ -26,14 +26,30 @@ These document types normally require at least one SAF-T reference.
 
 | Type | Description | Expected references |
 | --- | --- | --- |
-| `purchase-invoice` | Supplier invoice or equivalent purchase documentation. | Supplier ID, source document ID, transaction ID or voucher number. |
-| `sales-invoice` | Customer invoice or equivalent sales documentation. | Customer ID, source document ID, transaction ID or voucher number. |
+| `invoice` | Original structured invoice, normally EHF Billing 3.0 or Peppol BIS Billing 3.0 XML. | Source document ID, customer ID, supplier ID, transaction ID or voucher number. |
+| `credit-note` | Original structured credit note, normally EHF Billing 3.0 or Peppol BIS Billing 3.0 XML. | Source document ID, customer ID, supplier ID, transaction ID or voucher number. |
+| `invoice-rendering` | Human-readable rendering of an invoice or credit note, normally PDF. | Related original invoice file ID and the same SAF-T references when available. |
+| `invoice-attachment` | File embedded in or associated with an invoice or credit note. | Original invoice file ID and the same SAF-T references when available. |
 | `receipt` | Receipt or image documentation for a posted transaction. | Transaction ID, record ID or voucher number. |
 | `voucher-attachment` | General attachment to a voucher or posting. | Transaction ID, record ID or voucher number. |
 | `bank-statement` | Bank statement file or statement extract. | Bank account, payment reference or transaction period. |
 | `payment-documentation` | Payment file, payment confirmation or remittance documentation. | Payment/source document ID or transaction ID. |
-| `ehf-invoice` | Original EHF/Peppol invoice XML. | Source document ID, customer ID or supplier ID. |
-| `invoice-rendering` | Human-readable rendering of a structured invoice, normally PDF. | Source document ID, customer ID or supplier ID. |
+
+## Electronic Invoice Rules
+
+When the source system has the original EHF/Peppol invoice or credit note XML,
+the original XML should be exported with `documentType` set to `invoice` or
+`credit-note`.
+
+PDFs should use `invoice-rendering` and link to the original XML with
+`relatedFileIds`.
+
+Attachments embedded in the EHF/Peppol XML should use `invoice-attachment` and
+link to the original XML with `extractedFromFileId`.
+
+If only a PDF exists and the original XML is unavailable, the package should
+include the PDF as `invoice-rendering` and state the missing XML in
+`knownOmissions`.
 
 ## Non-Posting Accounting Documents
 
@@ -64,7 +80,7 @@ These document types may refer primarily to objects in `objects/`.
 
 ## Open Questions
 
-- Should `ehf-invoice` be mandatory whenever available?
+- Should original EHF/Peppol XML be mandatory whenever available?
 - Should `invoice-rendering` be required in addition to original structured
   invoice files?
 - Should bank statements use a separate object model instead of only document

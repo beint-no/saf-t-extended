@@ -8,13 +8,14 @@
     "profile",
     "packageId",
     "profileVersion",
-    "conformanceLevel",
     "createdAt",
     "exporter",
     "company",
     "period",
     "safTFiles",
-    "files"
+    "files",
+    "completeness",
+    "knownOmissions"
   ],
   "properties": {
     "profile": {
@@ -23,9 +24,6 @@
     "profileVersion": {
       "type": "string",
       "default": "0.1-draft"
-    },
-    "conformanceLevel": {
-      "enum": ["core", "complete-archive", "migration"]
     },
     "packageId": {
       "type": "string",
@@ -77,7 +75,7 @@
     "knownOmissions": {
       "type": "array",
       "items": {
-        "type": "string"
+        "$ref": "#/$defs/knownOmission"
       },
       "default": []
     }
@@ -169,8 +167,11 @@
     "packageFile": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["path", "sha256", "documentType"],
+      "required": ["id", "path", "sha256", "mediaType", "documentType"],
       "properties": {
+        "id": {
+          "$ref": "#/$defs/fileId"
+        },
         "path": {
           "type": "string",
           "pattern": "^files/"
@@ -186,6 +187,19 @@
         },
         "title": {
           "type": "string"
+        },
+        "relatedFileIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fileId"
+          },
+          "default": []
+        },
+        "extractedFromFileId": {
+          "$ref": "#/$defs/fileId"
+        },
+        "electronicInvoice": {
+          "$ref": "#/$defs/electronicInvoice"
         },
         "safTReferences": {
           "type": "array",
@@ -278,7 +292,16 @@
       "required": ["scope", "status"],
       "properties": {
         "scope": {
-          "type": "string"
+          "enum": [
+            "saf-t-xml",
+            "electronic-invoices",
+            "invoice-renderings",
+            "invoice-attachments",
+            "posting-attachments",
+            "non-posting-documents",
+            "master-data",
+            "sidecar-objects"
+          ]
         },
         "status": {
           "enum": ["complete", "partial", "not_available", "not_applicable"]
@@ -288,40 +311,103 @@
         }
       }
     },
+    "knownOmission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "reason"],
+      "properties": {
+        "scope": {
+          "enum": [
+            "saf-t-xml",
+            "electronic-invoices",
+            "invoice-renderings",
+            "invoice-attachments",
+            "posting-attachments",
+            "non-posting-documents",
+            "master-data",
+            "sidecar-objects"
+          ]
+        },
+        "reason": {
+          "enum": [
+            "not_available_in_source_system",
+            "not_exported_by_source_system",
+            "outside_selected_period",
+            "outside_selected_scope",
+            "privacy_or_legal_exclusion",
+            "unknown"
+          ]
+        },
+        "reference": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "electronicInvoice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["standard", "ublDocumentType", "invoiceId", "issueDate"],
+      "properties": {
+        "standard": {
+          "enum": ["ehf-billing-3.0", "peppol-bis-billing-3.0"]
+        },
+        "ublDocumentType": {
+          "enum": ["Invoice", "CreditNote"]
+        },
+        "invoiceId": {
+          "type": "string"
+        },
+        "issueDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "customizationId": {
+          "type": "string"
+        },
+        "profileId": {
+          "type": "string"
+        },
+        "sellerOrganizationNumber": {
+          "type": "string"
+        },
+        "buyerOrganizationNumber": {
+          "type": "string"
+        }
+      }
+    },
+    "fileId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    },
     "sha256": {
       "type": "string",
       "pattern": "^[a-f0-9]{64}$"
     },
     "documentType": {
-      "oneOf": [
-        {
-          "enum": [
-            "purchase-invoice",
-            "sales-invoice",
-            "receipt",
-            "voucher-attachment",
-            "bank-statement",
-            "payment-documentation",
-            "ehf-invoice",
-            "invoice-rendering",
-            "customer-contract",
-            "supplier-contract",
-            "engagement-letter",
-            "kyc-document",
-            "correspondence",
-            "board-document",
-            "system-report",
-            "import-log",
-            "export-log",
-            "employee-document",
-            "project-document",
-            "department-document"
-          ]
-        },
-        {
-          "type": "string",
-          "pattern": "^[a-z0-9.-]+\\.[a-z]{2,}:[a-z0-9][a-z0-9-]*$"
-        }
+      "enum": [
+        "invoice",
+        "credit-note",
+        "invoice-rendering",
+        "invoice-attachment",
+        "receipt",
+        "voucher-attachment",
+        "bank-statement",
+        "payment-documentation",
+        "customer-contract",
+        "supplier-contract",
+        "engagement-letter",
+        "kyc-document",
+        "correspondence",
+        "board-document",
+        "system-report",
+        "import-log",
+        "export-log",
+        "employee-document",
+        "project-document",
+        "department-document"
       ]
     }
   }

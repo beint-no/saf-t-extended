@@ -30,9 +30,19 @@ saf-t-extended-package/
   saf-t/
     SAF-T Financial_999999999_20260131235959_A_1_1.xml
   files/
+    e-invoices/
+      incoming/
+        2026/
+          INV-1001.xml
+      renderings/
+        2026/
+          INV-1001.pdf
+      attachments/
+        2026/
+          INV-1001-timesheet.pdf
     postings/
       2026/
-        voucher-1001.pdf
+        receipt-42.jpg
     documents/
       contracts/
         customer-agreement-42.pdf
@@ -45,11 +55,15 @@ Required:
 
 - `manifest.json`
 - at least one `saf-t/*.xml` file
+- every exported file listed in `manifest.json`
+- SHA-256 checksum for every listed file
 
-Recommended:
+Standard directories:
 
-- `files/postings/` for files linked to postings, source documents or payment
-  lines
+- `files/e-invoices/` for EHF/Peppol invoice and credit note XML, renderings
+  and extracted attachments
+- `files/postings/` for other files linked to postings, source documents or
+  payment lines
 - `files/documents/` for accounting documents that are not directly linked to a
   posting
 - `objects/` for sidecar object files that SAF-T does not express adequately
@@ -65,8 +79,9 @@ It should include:
 - exported company
 - export period
 - SAF-T XML files
-- binary files and their checksums
+- exported files and their checksums
 - links from files to SAF-T references
+- links between original EHF/Peppol XML, renderings and attachments
 - sidecar object files
 - completeness statements
 - known omissions
@@ -74,6 +89,31 @@ It should include:
 See [manifest.schema.json](manifest.schema.json).
 See [document-types.md](document-types.md) for the initial document type
 registry.
+
+## EHF and Peppol Invoices
+
+When an invoice or credit note exists as EHF Billing 3.0 or Peppol BIS Billing
+3.0 XML, the original XML should be exported.
+
+The original XML should be listed as:
+
+- `documentType: "invoice"` for invoices
+- `documentType: "credit-note"` for credit notes
+- `mediaType: "application/xml"` or a more specific XML media type
+- `electronicInvoice.standard: "ehf-billing-3.0"` or
+  `"peppol-bis-billing-3.0"`
+
+PDFs generated from the original XML should be listed as
+`documentType: "invoice-rendering"` and linked to the original XML using
+`relatedFileIds`.
+
+Attachments embedded in the EHF/Peppol XML should be extracted as ordinary files
+with `documentType: "invoice-attachment"` and linked to the original XML using
+`extractedFromFileId`.
+
+The package should preserve the original EHF/Peppol XML even when a PDF
+rendering exists. If the source system has only a PDF and not the original XML,
+that omission should be stated in `knownOmissions`.
 
 ## Linking Files to SAF-T
 
@@ -101,24 +141,26 @@ Files related to postings should be placed under `files/postings/`.
 
 Examples:
 
-- purchase invoice PDF
-- sales invoice PDF
 - receipt image
 - bank transaction attachment
-- imported EHF/Peppol invoice rendered as PDF plus original XML where available
+- voucher documentation that is not an invoice or credit note
+- payment confirmation file
 
 Each file should have a manifest entry with:
 
+- `id`
 - `documentType`
 - `path`
 - `sha256`
 - `mediaType`
 - `safTReferences`
+- optional `relatedFileIds`
+- optional `extractedFromFileId`
 - optional `systemReferences`
 
-The `documentType` value should come from the registry unless no suitable value
-exists. Unknown values should be treated as draft extension proposals, not as
-private permanent labels.
+The `documentType` value must come from the registry. The profile should expand
+the registry when a generally useful new document type is needed rather than
+allowing private permanent labels.
 
 ## Non-Posting Documents
 
@@ -226,7 +268,8 @@ When deciding where data belongs:
 
 - Should `objects/` use JSON Lines, CSV, Parquet or a mix?
 - Which document types should be standardized first?
-- Should the package allow original EHF/Peppol XML beside rendered PDFs?
 - How should open customer/supplier items be represented if they are
   insufficiently clear from SAF-T alone?
-- Should there be separate profiles for audit, archive and migration exports?
+- Should embedded EHF/Peppol attachments always be extracted as separate package
+  files, or should the original base64 content in the XML be enough when the
+  attachment is not needed by the receiving system?

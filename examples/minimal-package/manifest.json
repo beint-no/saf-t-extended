@@ -1,7 +1,6 @@
 {
   "profile": "saf-t-extended-package",
   "profileVersion": "0.1-draft",
-  "conformanceLevel": "migration",
   "packageId": "example-999999999-2026",
   "createdAt": "2026-07-09T00:00:00Z",
   "exporter": {
@@ -32,11 +31,22 @@
   ],
   "files": [
     {
-      "path": "files/postings/2026/voucher-1001.pdf",
-      "sha256": "bf4545f484c94fc35a64792949448007324e371950daf2dfe468e435aec411a5",
-      "mediaType": "application/pdf",
-      "documentType": "purchase-invoice",
-      "title": "Purchase invoice voucher 1001",
+      "id": "file-invoice-1001-xml",
+      "path": "files/e-invoices/incoming/2026/INV-1001.xml",
+      "sha256": "1d4e11ef87413d5228937058478e854df638db693db225c4a4f8c6595781ee9c",
+      "mediaType": "application/xml",
+      "documentType": "invoice",
+      "title": "Incoming EHF invoice INV-1001",
+      "electronicInvoice": {
+        "standard": "ehf-billing-3.0",
+        "ublDocumentType": "Invoice",
+        "invoiceId": "INV-1001",
+        "issueDate": "2026-01-15",
+        "customizationId": "urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0",
+        "profileId": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+        "sellerOrganizationNumber": "987654321",
+        "buyerOrganizationNumber": "999999999"
+      },
       "safTReferences": [
         {
           "journalId": "GL",
@@ -54,6 +64,27 @@
       ]
     },
     {
+      "id": "file-invoice-1001-pdf",
+      "path": "files/e-invoices/renderings/2026/INV-1001.pdf",
+      "sha256": "e1cfe54f9621f753f670b6a5702f934358215f69ea5addd37020dbde9d74421e",
+      "mediaType": "application/pdf",
+      "documentType": "invoice-rendering",
+      "title": "PDF rendering of incoming EHF invoice INV-1001",
+      "relatedFileIds": [
+        "file-invoice-1001-xml"
+      ],
+      "safTReferences": [
+        {
+          "journalId": "GL",
+          "transactionId": "1001",
+          "recordId": "1",
+          "sourceDocumentId": "INV-1001",
+          "supplierId": "24000"
+        }
+      ]
+    },
+    {
+      "id": "file-customer-agreement-42",
       "path": "files/documents/contracts/customer-agreement-42.pdf",
       "sha256": "71af00e3c85e30e12cb0dd824cc85373e3f10d1d916adcc717f024b72d8d1bf1",
       "mediaType": "application/pdf",
@@ -75,7 +106,7 @@
     },
     {
       "path": "objects/document-index.jsonl",
-      "sha256": "cd21c405b29609e4287116856fa2336d0f1e98e04928c3fad656d5b9aec89262",
+      "sha256": "7d500c25fe96e225c1cffb46af8a6bcb655e10b105617d8f30d11373b00340b5",
       "objectType": "document-index",
       "format": "jsonl"
     }
@@ -87,9 +118,14 @@
       "note": "The package contains the available SAF-T XML export for the selected period."
     },
     {
+      "scope": "electronic-invoices",
+      "status": "complete",
+      "note": "The example includes one original EHF invoice XML and a linked PDF rendering."
+    },
+    {
       "scope": "posting-attachments",
-      "status": "partial",
-      "note": "This example contains only two illustrative files."
+      "status": "not_applicable",
+      "note": "This minimal example does not include additional voucher attachments."
     }
   ],
   "knownOmissions": []

@@ -17,10 +17,12 @@ Possible future names:
 ### The scope can become too broad
 
 The profile touches ledger data, attachments, contracts, KYC documents,
-employees, migration metadata and archive requirements. Without conformance
-levels, it can become an impossible all-or-nothing standard.
+employees, migration metadata and archive requirements. Too many variants would
+make it hard for vendors and importers to know what to implement.
 
-The draft therefore separates Core, Complete Archive and Migration.
+The draft should therefore keep one main package profile and use structured
+`completeness` and `knownOmissions` fields to explain what a source system could
+not provide.
 
 ### Sidecars can become a dumping ground
 
@@ -39,6 +41,13 @@ general HR export by accident.
 The profile should include only minimal employee sidecars, and only when needed
 for accounting dimensions, audit, archive or migration.
 
+### EHF/Peppol should be primary invoice evidence
+
+If an invoice or credit note exists as EHF Billing 3.0 or Peppol BIS Billing
+3.0 XML, the XML should be exported as the original evidence. A PDF should be a
+rendering, not the only invoice file, unless the source system no longer has the
+original XML.
+
 ### The example package is illustrative
 
 The current example is useful for showing package shape and manifest links, but
@@ -50,8 +59,10 @@ it should eventually use a fully valid SAF-T sample based on official examples.
 
 Create a controlled list of document types, for example:
 
-- `purchase-invoice`
-- `sales-invoice`
+- `invoice`
+- `credit-note`
+- `invoice-rendering`
+- `invoice-attachment`
 - `receipt`
 - `bank-statement`
 - `payment-documentation`
@@ -78,9 +89,17 @@ official SAF-T structures or whether a migration-only sidecar is needed.
 
 ### 3. EHF/Peppol preservation
 
-When an invoice exists as EHF/Peppol XML, the package should probably include
-the original XML, not only a PDF rendering. The PDF is useful for humans; the XML
-is useful for verification and migration.
+When an invoice exists as EHF/Peppol XML, the package should include the
+original XML, not only a PDF rendering. The PDF is useful for humans; the XML is
+useful for verification, audit and migration.
+
+Next improvements:
+
+- validate UBL invoice and credit note roots
+- extract and compare CustomizationID, ProfileID, invoice ID and issue date
+- define how embedded EHF/Peppol attachments should be extracted
+- decide whether EHF/Peppol XML should be validated with Schematron in a later
+  validator version
 
 ### 4. Integrity and signing
 
@@ -92,26 +111,30 @@ SHA-256 checksums are a start. A stronger profile should define:
 - checksum file format
 - rules for ZIP or TAR packaging
 
-### 5. Privacy profiles
+### 5. Privacy and purpose
 
-The same package format may need different privacy profiles:
+The same package format may be used for archive, audit, migration or authority
+requests. It should stay one package format, but it may still need
+purpose-specific guidance for privacy and legal minimization:
 
 - archive profile
 - audit profile
 - migration profile
 - authority-request profile
 
-Each profile should state what personal data should normally be excluded.
+Each purpose should state what personal data should normally be excluded.
 
 ### 6. Validation tooling
 
-The repository should include a small validator that checks:
+The repository should include a validator that checks:
 
-- `manifest.json` against the schema
 - all referenced files exist
 - checksums match
-- SAF-T references have plausible identifiers
-- known omissions are present for declared partial exports
+- file IDs are unique
+- document types are registered
+- linked file IDs exist
+- EHF/Peppol invoice metadata matches the XML where practical
+- completeness and known omissions are structured
 
 ### 7. Real-world test exports
 
@@ -131,7 +154,8 @@ repository needs a lightweight governance model:
 
 ## Strongest Next Step
 
-The next useful step is a validator plus a stricter document type registry.
+The next useful step is deeper EHF/Peppol validation plus a stricter document
+type registry.
 
 That turns the profile from a written proposal into something vendors can test
 against and journalists/regulators can understand concretely.

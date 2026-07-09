@@ -23,7 +23,7 @@
     },
     "profileVersion": {
       "type": "string",
-      "default": "0.1-draft"
+      "default": "0.1"
     },
     "packageId": {
       "type": "string",
@@ -188,19 +188,6 @@
         "title": {
           "type": "string"
         },
-        "relatedFileIds": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/fileId"
-          },
-          "default": []
-        },
-        "extractedFromFileId": {
-          "$ref": "#/$defs/fileId"
-        },
-        "electronicInvoice": {
-          "$ref": "#/$defs/electronicInvoice"
-        },
         "safTReferences": {
           "type": "array",
           "items": {
@@ -336,38 +323,6 @@
           "type": "string"
         },
         "note": {
-          "type": "string"
-        }
-      }
-    },
-    "electronicInvoice": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["standard", "ublDocumentType", "invoiceId", "issueDate"],
-      "properties": {
-        "standard": {
-          "enum": ["ehf-billing-3.0", "peppol-bis-billing-3.0"]
-        },
-        "ublDocumentType": {
-          "enum": ["Invoice", "CreditNote"]
-        },
-        "invoiceId": {
-          "type": "string"
-        },
-        "issueDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "customizationId": {
-          "type": "string"
-        },
-        "profileId": {
-          "type": "string"
-        },
-        "sellerOrganizationNumber": {
-          "type": "string"
-        },
-        "buyerOrganizationNumber": {
           "type": "string"
         }
       }

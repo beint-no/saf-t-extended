@@ -1,12 +1,15 @@
 # SAF-T Extended
 
-SAF-T Extended is a draft export package profile for complete accounting-data
+SAF-T Extended is an open export package profile for complete accounting-data
 portability.
 
-The profile keeps official SAF-T Financial XML as the ledger and master-data
-core, and defines how an accounting system should package the related files,
-documents and metadata needed to archive, audit, inspect or migrate the
-accounting records.
+It keeps official SAF-T Financial XML as the ledger and master-data core, and
+defines how an accounting system should package the files needed to archive,
+audit, inspect or migrate the accounting records.
+
+The profile does not replace Norwegian SAF-T Financial, EHF or Peppol. It uses
+those standards first and adds only package-level conventions for files,
+checksums, completeness and optional sidecar data.
 
 ## Problem
 
@@ -23,7 +26,7 @@ Accounting records commonly depend on files and objects outside the ledger XML:
 - contracts, engagement letters, KYC/AML files and correspondence
 - system identifiers needed to reconcile an export with the source system
 
-When these files are missing, unlinked or exported in a vendor-specific way, the
+When these files are missing, unlisted or exported in a vendor-specific way, the
 customer may technically have a ledger export but still lack a practical archive
 or migration package.
 
@@ -36,25 +39,11 @@ authority without private knowledge of the exporting vendor's database.
 A valid export should make it possible to answer:
 
 - which SAF-T files are included?
-- which attachments belong to which postings, invoices, payments or other
-  accounting references?
-- which documents are included even though they are not tied to a posting?
-- which optional SAF-T master-data fields were exported?
+- which posting-related files are included?
+- which optional non-posting documents and sidecar objects are included?
 - which data was unavailable, intentionally omitted or outside the selected
   export scope?
 - whether files were changed after export?
-
-## Relationship to Official SAF-T
-
-This profile does not replace Norwegian SAF-T Financial and does not define a
-new tax submission format.
-
-It uses official SAF-T Financial XML first. Package-level metadata is used only
-for things that are outside the XML file itself, such as folder layout,
-checksums, attachments, document links and limited sidecar data.
-
-If official SAF-T Financial defines a suitable field or structure, exporters
-should use that structure instead of inventing a parallel sidecar format.
 
 ## Minimum Valid Export
 
@@ -62,26 +51,39 @@ The minimum valid export is intentionally small enough for accounting-system
 vendors to adopt:
 
 1. official SAF-T Financial XML for the selected period and scope
-2. all files in the source system that relate directly to postings in that
+2. every file in the source system that relates directly to postings in that
    SAF-T export
-3. a manifest that lists those files, links them to SAF-T references where
-   possible and includes checksums
+3. a manifest that lists package files with path, document type, media type and
+   SHA-256 checksum, plus SAF-T references where available
 4. structured omissions for posting-related files that are unavailable or cannot
    be exported
 
 Posting-related files include original EHF/Peppol invoice and credit note XML,
-invoice PDFs/renderings, embedded invoice attachments, voucher attachments,
-receipts, bank/payment documentation and other files needed to understand the
-postings in the SAF-T file.
+invoice PDFs/renderings when present, voucher attachments, receipts, bank and
+payment documentation, and other files needed to understand the postings in the
+SAF-T file.
 
 Everything beyond that minimum is optional, but recommended when the source
 system has the data and the export purpose requires it.
+
+## EHF and Peppol Invoices
+
+When an invoice or credit note exists as EHF Billing 3.0 or Peppol BIS Billing
+3.0 XML, include the original XML as a posting-related file.
+
+If the same invoice also has a PDF or other file in the source system, include
+that file too.
+
+The manifest does not need to re-model relationships that already exist in
+SAF-T, in the EHF/Peppol XML, or in the source document reference. It only needs
+to list the exported files, checksums, document types and SAF-T references where
+available.
 
 ## Recommended Additions
 
 Recommended additions include:
 
-| Area | Requirement |
+| Area | Recommendation |
 | --- | --- |
 | Customer and supplier master data | Complete use of available SAF-T customer and supplier fields, with sidecars only for data SAF-T cannot represent. |
 | Employee information | Minimal employee sidecar data when employees are used as accounting dimensions or needed for archive, audit or migration. |
@@ -100,45 +102,18 @@ python3 tools/validate-package.py examples/minimal-package
 ```
 
 It checks that the manifest parses, referenced files exist, checksums match,
-document types are registered, file IDs are unique, linked file IDs exist, and
-EHF/Peppol invoice metadata matches the XML root and core fields. It also
-requires completeness statements for SAF-T XML and posting-related documents,
-which are the minimum export baseline.
+document types are registered, file IDs are unique, and the minimum
+completeness statements are present.
 
-## EHF and Peppol Invoices
+## Implementers
 
-When an invoice or credit note exists as EHF Billing 3.0 or Peppol BIS Billing
-3.0 XML, the original XML should be exported as the primary invoice evidence.
+Accounting-system vendors can be listed in
+[IMPLEMENTERS.md](IMPLEMENTERS.md) after showing that their export supports the
+minimum valid export.
 
-PDFs should be exported as renderings of the structured invoice, not as a
-replacement for the original XML. Attachments embedded in or associated with an
-EHF/Peppol invoice should be extracted as ordinary files and linked back to the
-original invoice file in the manifest.
-
-The manifest should identify:
-
-- invoice or credit note
-- EHF/Peppol standard
-- UBL document type
-- invoice or credit note ID
-- issue date
-- CustomizationID and ProfileID
-- seller and buyer organization numbers when available
-- related PDF renderings and extracted attachments
-
-## Master Data Policy
-
-Customer and supplier master data should be exported through SAF-T
-`MasterFiles/Customers` and `MasterFiles/Suppliers` wherever possible.
-
-The profile should standardize completeness expectations for those SAF-T
-structures rather than require duplicate `customers.json` or `suppliers.json`
-files.
-
-Employee master data is different. SAF-T can represent employees as accounting
-dimensions when they are used that way, but it is not a general HR export
-format. Employee data should therefore be optional, minimized and exported as a
-sidecar only when needed for archive, audit or migration.
+A practical proof is a sample package that passes the validator and contains
+SAF-T XML plus all posting-related files available in the source system for the
+selected scope.
 
 ## Privacy and Security
 
@@ -150,38 +125,14 @@ make omissions explicit. Sensitive fields such as national identity numbers,
 private addresses, health data, payroll details and bank account details should
 not be included unless there is a clear legal, audit or migration need.
 
-The minimum valid export focuses on posting-related accounting evidence. Broader
-employee, customer, supplier, contract and migration data should be included only
-when useful for the export purpose.
+## Roadmap
 
-## Out of Scope
+See [docs/roadmap.md](docs/roadmap.md).
 
-This draft does not define:
+## Official Sources
 
-- a replacement for official SAF-T Financial
-- a tax submission channel
-- a full payroll or HR export standard
-- a competing invoice format
-- commercial terms, prices, customers or market conduct
-
-## Open Work
-
-The most important unresolved questions are:
-
-- which document types should be standardized first?
-- how should open customer and supplier items be represented when SAF-T is not
-  sufficient in practice?
-- how much EHF/Peppol metadata should be repeated in the manifest instead of
-  only being read from the original XML?
-- how should package signing and tamper evidence work?
-
-See [docs/critique-and-roadmap.md](docs/critique-and-roadmap.md) for current
-critique and improvement ideas.
-
-## Official SAF-T Sources
-
-This draft is intended to align with the official Norwegian SAF-T Financial
-documentation and schemas published by the Norwegian Tax Administration:
+This profile is intended to align with the official Norwegian SAF-T Financial,
+EHF and Peppol documentation:
 
 - https://www.skatteetaten.no/en/business-and-organisation/start-and-run/best-practices-accounting-and-cash-register-systems/saf-t-financial/
 - https://www.skatteetaten.no/en/business-and-organisation/start-and-run/best-practices-accounting-and-cash-register-systems/saf-t-financial/documentation/

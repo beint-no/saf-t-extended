@@ -1,6 +1,6 @@
 {
   "profile": "saf-t-extended-package",
-  "profileVersion": "0.1-draft",
+  "profileVersion": "0.1",
   "packageId": "example-999999999-2026",
   "createdAt": "2026-07-09T00:00:00Z",
   "exporter": {
@@ -32,21 +32,11 @@
   "files": [
     {
       "id": "file-invoice-1001-xml",
-      "path": "files/e-invoices/incoming/2026/INV-1001.xml",
+      "path": "files/postings/2026/INV-1001.xml",
       "sha256": "1d4e11ef87413d5228937058478e854df638db693db225c4a4f8c6595781ee9c",
       "mediaType": "application/xml",
       "documentType": "invoice",
       "title": "Incoming EHF invoice INV-1001",
-      "electronicInvoice": {
-        "standard": "ehf-billing-3.0",
-        "ublDocumentType": "Invoice",
-        "invoiceId": "INV-1001",
-        "issueDate": "2026-01-15",
-        "customizationId": "urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0",
-        "profileId": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
-        "sellerOrganizationNumber": "987654321",
-        "buyerOrganizationNumber": "999999999"
-      },
       "safTReferences": [
         {
           "journalId": "GL",
@@ -65,14 +55,11 @@
     },
     {
       "id": "file-invoice-1001-pdf",
-      "path": "files/e-invoices/renderings/2026/INV-1001.pdf",
+      "path": "files/postings/2026/INV-1001.pdf",
       "sha256": "e1cfe54f9621f753f670b6a5702f934358215f69ea5addd37020dbde9d74421e",
       "mediaType": "application/pdf",
       "documentType": "invoice-rendering",
-      "title": "PDF rendering of incoming EHF invoice INV-1001",
-      "relatedFileIds": [
-        "file-invoice-1001-xml"
-      ],
+      "title": "PDF copy of incoming EHF invoice INV-1001",
       "safTReferences": [
         {
           "journalId": "GL",
@@ -82,33 +69,6 @@
           "supplierId": "24000"
         }
       ]
-    },
-    {
-      "id": "file-customer-agreement-42",
-      "path": "files/documents/contracts/customer-agreement-42.pdf",
-      "sha256": "71af00e3c85e30e12cb0dd824cc85373e3f10d1d916adcc717f024b72d8d1bf1",
-      "mediaType": "application/pdf",
-      "documentType": "customer-contract",
-      "title": "Customer agreement",
-      "safTReferences": [
-        {
-          "customerId": "15000"
-        }
-      ]
-    }
-  ],
-  "objectFiles": [
-    {
-      "path": "objects/employees.jsonl",
-      "sha256": "fbc792d62fc9efc6137af6447c0e93fd90407a2d99585c43ecf3033e044baf5f",
-      "objectType": "employees",
-      "format": "jsonl"
-    },
-    {
-      "path": "objects/document-index.jsonl",
-      "sha256": "7d500c25fe96e225c1cffb46af8a6bcb655e10b105617d8f30d11373b00340b5",
-      "objectType": "document-index",
-      "format": "jsonl"
     }
   ],
   "completeness": [
@@ -120,7 +80,7 @@
     {
       "scope": "posting-related-documents",
       "status": "complete",
-      "note": "The example includes one original EHF invoice XML and a linked PDF rendering as posting-related documents."
+      "note": "The package contains the posting-related files available in the source system for the selected period."
     }
   ],
   "knownOmissions": []

@@ -4,7 +4,6 @@ import hashlib
 import json
 import re
 import sys
-import xml.etree.ElementTree as ET
 from pathlib import Path
 
 
@@ -50,7 +49,6 @@ OMISSION_REASONS = {
     "unknown",
 }
 
-XML_MEDIA_TYPES = {"application/xml", "text/xml"}
 SHA256 = re.compile(r"^[a-f0-9]{64}$")
 FILE_ID = re.compile(r"^[A-Za-z0-9._:-]+$")
 
@@ -61,31 +59,6 @@ def sha256(path):
         for chunk in iter(lambda: file.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def is_xml_media_type(media_type):
-    return media_type in XML_MEDIA_TYPES or media_type.endswith("+xml")
-
-
-def local_name(tag):
-    return tag.rsplit("}", 1)[-1]
-
-
-def first_text(root, name):
-    for element in root.iter():
-        if local_name(element.tag) == name and element.text:
-            return element.text.strip()
-    return ""
-
-
-def first_text_inside(root, parent_name, child_name):
-    for parent in root.iter():
-        if local_name(parent.tag) != parent_name:
-            continue
-        for child in parent.iter():
-            if local_name(child.tag) == child_name and child.text:
-                return child.text.strip()
-    return ""
 
 
 def package_path(root, path_value, location, errors):
@@ -117,54 +90,7 @@ def validate_hash(root, item, errors, location):
         errors.append(f"{location}: sha256 mismatch for {item.get('path')}")
 
 
-def validate_electronic_invoice(root, item, errors, warnings, location):
-    path = package_path(root, item.get("path"), location, errors)
-    if path is None or not path.exists():
-        return
-
-    metadata = item.get("electronicInvoice")
-    if not isinstance(metadata, dict):
-        errors.append(f"{location}: invoice and credit-note files must include electronicInvoice metadata")
-        return
-
-    media_type = item.get("mediaType", "")
-    if not is_xml_media_type(media_type):
-        errors.append(f"{location}: invoice and credit-note files must have an XML mediaType")
-
-    try:
-        root_element = ET.parse(path).getroot()
-    except ET.ParseError as error:
-        errors.append(f"{location}: XML parse error: {error}")
-        return
-
-    expected_root = "Invoice" if item.get("documentType") == "invoice" else "CreditNote"
-    actual_root = local_name(root_element.tag)
-    if actual_root != expected_root:
-        errors.append(f"{location}: XML root is {actual_root}, expected {expected_root}")
-
-    if metadata.get("ublDocumentType") != expected_root:
-        errors.append(f"{location}: electronicInvoice.ublDocumentType must be {expected_root}")
-
-    comparisons = {
-        "invoiceId": first_text(root_element, "ID"),
-        "issueDate": first_text(root_element, "IssueDate"),
-        "customizationId": first_text(root_element, "CustomizationID"),
-        "profileId": first_text(root_element, "ProfileID"),
-        "sellerOrganizationNumber": first_text_inside(root_element, "AccountingSupplierParty", "CompanyID"),
-        "buyerOrganizationNumber": first_text_inside(root_element, "AccountingCustomerParty", "CompanyID"),
-    }
-    for field, actual in comparisons.items():
-        expected = metadata.get(field)
-        if expected and actual and expected != actual:
-            errors.append(f"{location}: electronicInvoice.{field} is {expected!r}, XML has {actual!r}")
-
-    customization_id = metadata.get("customizationId", "")
-    if metadata.get("standard") in {"ehf-billing-3.0", "peppol-bis-billing-3.0"}:
-        if customization_id and "poacc:billing:3.0" not in customization_id:
-            warnings.append(f"{location}: customizationId does not look like Peppol BIS Billing 3.0")
-
-
-def validate_package_file(root, item, file_ids, errors, warnings, location):
+def validate_package_file(root, item, file_ids, errors, location):
     file_id = item.get("id")
     if not file_id:
         errors.append(f"{location}: missing id")
@@ -189,30 +115,8 @@ def validate_package_file(root, item, file_ids, errors, warnings, location):
     if document_type not in DOCUMENT_TYPES:
         errors.append(f"{location}: unknown documentType {document_type!r}")
 
-    if document_type in {"invoice", "credit-note"}:
-        validate_electronic_invoice(root, item, errors, warnings, location)
-
-    if document_type == "invoice-rendering":
-        if media_type != "application/pdf":
-            errors.append(f"{location}: invoice-rendering must use mediaType application/pdf")
-        if not item.get("relatedFileIds"):
-            errors.append(f"{location}: invoice-rendering must link to the original invoice with relatedFileIds")
-
-    if document_type == "invoice-attachment":
-        if not item.get("extractedFromFileId") and not item.get("relatedFileIds"):
-            errors.append(f"{location}: invoice-attachment must use extractedFromFileId or relatedFileIds")
-
-
-def validate_references(manifest, errors):
-    file_ids = {item["id"] for item in manifest.get("files", []) if "id" in item}
-    for index, item in enumerate(manifest.get("files", [])):
-        location = f"files[{index}]"
-        for related_id in item.get("relatedFileIds", []):
-            if related_id not in file_ids:
-                errors.append(f"{location}: relatedFileIds references unknown file id {related_id!r}")
-        extracted_from = item.get("extractedFromFileId")
-        if extracted_from and extracted_from not in file_ids:
-            errors.append(f"{location}: extractedFromFileId references unknown file id {extracted_from!r}")
+    if document_type == "invoice-rendering" and media_type != "application/pdf":
+        errors.append(f"{location}: invoice-rendering should use mediaType application/pdf")
 
 
 def validate_completeness(manifest, errors):
@@ -313,7 +217,7 @@ def validate_package(root):
 
     file_ids = set()
     for index, item in enumerate(manifest.get("files", [])):
-        validate_package_file(root, item, file_ids, errors, warnings, f"files[{index}]")
+        validate_package_file(root, item, file_ids, errors, f"files[{index}]")
 
     for index, item in enumerate(manifest.get("objectFiles", [])):
         validate_hash(root, item, errors, f"objectFiles[{index}]")
@@ -321,7 +225,6 @@ def validate_package(root):
         if not path.startswith("objects/"):
             errors.append(f"objectFiles[{index}]: path must start with objects/")
 
-    validate_references(manifest, errors)
     validate_completeness(manifest, errors)
     validate_known_omissions(manifest, errors)
     validate_listed_files(root, manifest, errors)

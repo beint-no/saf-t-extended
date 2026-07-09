@@ -1,3 +1,0 @@
-{"documentId":"doc-1","fileId":"file-invoice-1001-xml","path":"files/e-invoices/incoming/2026/INV-1001.xml","documentType":"invoice","safTReferences":[{"journalId":"GL","transactionId":"1001","recordId":"1","sourceDocumentId":"INV-1001","supplierId":"24000"}]}
-{"documentId":"doc-2","fileId":"file-invoice-1001-pdf","path":"files/e-invoices/renderings/2026/INV-1001.pdf","documentType":"invoice-rendering","relatedFileIds":["file-invoice-1001-xml"],"safTReferences":[{"journalId":"GL","transactionId":"1001","recordId":"1","sourceDocumentId":"INV-1001","supplierId":"24000"}]}
-{"documentId":"doc-3","fileId":"file-customer-agreement-42","path":"files/documents/contracts/customer-agreement-42.pdf","documentType":"customer-contract","safTReferences":[{"customerId":"15000"}]}

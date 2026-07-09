@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AuditFile xmlns="urn:StandardAuditFile-Taxation-Financial:NO">
+  <Header>
+    <AuditFileVersion>1.40</AuditFileVersion>
+    <AuditFileCountry>NO</AuditFileCountry>
+    <AuditFileDateCreated>2026-07-09</AuditFileDateCreated>
+    <SoftwareCompanyName>Example Vendor</SoftwareCompanyName>
+    <SoftwareID>Example Accounting</SoftwareID>
+    <SoftwareVersion>1.0</SoftwareVersion>
+    <Company>
+      <RegistrationNumber>999999999</RegistrationNumber>
+      <Name>Example Company AS</Name>
+      <Contact>
+        <ContactPerson>
+          <FirstName>Example</FirstName>
+          <LastName>Contact</LastName>
+        </ContactPerson>
+        <Telephone>00000000</Telephone>
+      </Contact>
+    </Company>
+    <DefaultCurrencyCode>NOK</DefaultCurrencyCode>
+    <SelectionCriteria>
+      <SelectionStartDate>2026-01-01</SelectionStartDate>
+      <SelectionEndDate>2026-12-31</SelectionEndDate>
+    </SelectionCriteria>
+    <TaxAccountingBasis>A</TaxAccountingBasis>
+    <UserID>example</UserID>
+  </Header>
+  <MasterFiles>
+    <GeneralLedgerAccounts>
+      <Account>
+        <AccountID>2400</AccountID>
+        <AccountDescription>Suppliers</AccountDescription>
+        <GroupingCategory>RF-1167</GroupingCategory>
+        <GroupingCode>7900</GroupingCode>
+      </Account>
+    </GeneralLedgerAccounts>
+    <Customers>
+      <Customer>
+        <Name>Example Customer AS</Name>
+        <CustomerID>15000</CustomerID>
+      </Customer>
+    </Customers>
+    <Suppliers>
+      <Supplier>
+        <Name>Example Supplier AS</Name>
+        <SupplierID>24000</SupplierID>
+      </Supplier>
+    </Suppliers>
+    <AnalysisTypeTable>
+      <AnalysisTypeTableEntry>
+        <AnalysisType>E</AnalysisType>
+        <AnalysisTypeDescription>Employees</AnalysisTypeDescription>
+        <AnalysisID>8000</AnalysisID>
+        <AnalysisIDDescription>Ola Nordmann</AnalysisIDDescription>
+      </AnalysisTypeTableEntry>
+    </AnalysisTypeTable>
+  </MasterFiles>
+  <GeneralLedgerEntries>
+    <NumberOfEntries>1</NumberOfEntries>
+    <TotalDebit>100.00</TotalDebit>
+    <TotalCredit>100.00</TotalCredit>
+  </GeneralLedgerEntries>
+  <SourceDocuments/>
+</AuditFile>

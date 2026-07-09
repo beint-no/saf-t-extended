@@ -1,0 +1,2 @@
+{"documentId":"doc-1","path":"files/postings/2026/voucher-1001.pdf","documentType":"purchase-invoice","safTReferences":[{"journalId":"GL","transactionId":"1001","recordId":"1","sourceDocumentId":"INV-1001","supplierId":"24000"}]}
+{"documentId":"doc-2","path":"files/documents/contracts/customer-agreement-42.pdf","documentType":"customer-contract","safTReferences":[{"customerId":"15000"}]}

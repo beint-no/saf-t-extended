@@ -1,0 +1,95 @@
+{
+  "profile": "saf-t-extended-package",
+  "profileVersion": "0.1-draft",
+  "packageId": "example-999999999-2026",
+  "createdAt": "2026-07-09T00:00:00Z",
+  "exporter": {
+    "name": "Example Exporter AS",
+    "organizationNumber": "999999999",
+    "contactEmail": "export@example.invalid"
+  },
+  "sourceSystem": {
+    "name": "Example Accounting",
+    "vendor": "Example Vendor",
+    "version": "1.0"
+  },
+  "company": {
+    "name": "Example Company AS",
+    "organizationNumber": "999999999"
+  },
+  "period": {
+    "startDate": "2026-01-01",
+    "endDate": "2026-12-31"
+  },
+  "safTFiles": [
+    {
+      "path": "saf-t/SAF-T Financial_999999999_20261231235959_A_1_1.xml",
+      "sha256": "4e8ef581ab56ed859733453e79c0c5a4d4b238bfd757e26227fb4f6f969614a4",
+      "safTVersion": "1.40",
+      "selection": "A"
+    }
+  ],
+  "files": [
+    {
+      "path": "files/postings/2026/voucher-1001.pdf",
+      "sha256": "bf4545f484c94fc35a64792949448007324e371950daf2dfe468e435aec411a5",
+      "mediaType": "application/pdf",
+      "documentType": "purchase-invoice",
+      "title": "Purchase invoice voucher 1001",
+      "safTReferences": [
+        {
+          "journalId": "GL",
+          "transactionId": "1001",
+          "recordId": "1",
+          "sourceDocumentId": "INV-1001",
+          "supplierId": "24000"
+        }
+      ],
+      "systemReferences": [
+        {
+          "type": "internalVoucherId",
+          "value": "voucher:1001"
+        }
+      ]
+    },
+    {
+      "path": "files/documents/contracts/customer-agreement-42.pdf",
+      "sha256": "71af00e3c85e30e12cb0dd824cc85373e3f10d1d916adcc717f024b72d8d1bf1",
+      "mediaType": "application/pdf",
+      "documentType": "customer-contract",
+      "title": "Customer agreement",
+      "safTReferences": [
+        {
+          "customerId": "15000"
+        }
+      ]
+    }
+  ],
+  "objectFiles": [
+    {
+      "path": "objects/employees.jsonl",
+      "sha256": "fbc792d62fc9efc6137af6447c0e93fd90407a2d99585c43ecf3033e044baf5f",
+      "objectType": "employees",
+      "format": "jsonl"
+    },
+    {
+      "path": "objects/document-index.jsonl",
+      "sha256": "cd21c405b29609e4287116856fa2336d0f1e98e04928c3fad656d5b9aec89262",
+      "objectType": "document-index",
+      "format": "jsonl"
+    }
+  ],
+  "completeness": [
+    {
+      "scope": "saf-t-xml",
+      "status": "complete",
+      "note": "The package contains the available SAF-T XML export for the selected period."
+    },
+    {
+      "scope": "posting-attachments",
+      "status": "partial",
+      "note": "This example contains only two illustrative files."
+    }
+  ],
+  "knownOmissions": []
+}

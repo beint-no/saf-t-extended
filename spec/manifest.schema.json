@@ -1,0 +1,291 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/beint-no/saf-t-extended/blob/main/spec/manifest.schema.json",
+  "title": "SAF-T Extended Package Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "packageId",
+    "createdAt",
+    "exporter",
+    "company",
+    "period",
+    "safTFiles",
+    "files"
+  ],
+  "properties": {
+    "profile": {
+      "const": "saf-t-extended-package"
+    },
+    "profileVersion": {
+      "type": "string",
+      "default": "0.1-draft"
+    },
+    "packageId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "exporter": {
+      "$ref": "#/$defs/exporter"
+    },
+    "sourceSystem": {
+      "$ref": "#/$defs/sourceSystem"
+    },
+    "company": {
+      "$ref": "#/$defs/company"
+    },
+    "period": {
+      "$ref": "#/$defs/period"
+    },
+    "safTFiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/safTFile"
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/packageFile"
+      }
+    },
+    "objectFiles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/objectFile"
+      },
+      "default": []
+    },
+    "completeness": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/completenessStatement"
+      },
+      "default": []
+    },
+    "knownOmissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "$defs": {
+    "exporter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "organizationNumber": {
+          "type": "string"
+        },
+        "contactEmail": {
+          "type": "string",
+          "format": "email"
+        }
+      }
+    },
+    "sourceSystem": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "vendor": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        }
+      }
+    },
+    "company": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "organizationNumber": {
+          "type": "string"
+        }
+      }
+    },
+    "period": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["startDate", "endDate"],
+      "properties": {
+        "startDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "safTFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^saf-t/"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "safTVersion": {
+          "type": "string"
+        },
+        "selection": {
+          "type": "string"
+        }
+      }
+    },
+    "packageFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "documentType"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^files/"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "mediaType": {
+          "type": "string"
+        },
+        "documentType": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "safTReferences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/safTReference"
+          },
+          "default": []
+        },
+        "systemReferences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/systemReference"
+          },
+          "default": []
+        }
+      }
+    },
+    "objectFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "objectType", "format"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^objects/"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "objectType": {
+          "type": "string"
+        },
+        "format": {
+          "enum": ["jsonl", "json", "csv"]
+        }
+      }
+    },
+    "safTReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "journalId": {
+          "type": "string"
+        },
+        "transactionId": {
+          "type": "string"
+        },
+        "recordId": {
+          "type": "string"
+        },
+        "sourceDocumentId": {
+          "type": "string"
+        },
+        "voucherNumber": {
+          "type": "string"
+        },
+        "customerId": {
+          "type": "string"
+        },
+        "supplierId": {
+          "type": "string"
+        },
+        "ownerId": {
+          "type": "string"
+        },
+        "analysisType": {
+          "type": "string"
+        },
+        "analysisId": {
+          "type": "string"
+        }
+      }
+    },
+    "systemReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "value"],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "completenessStatement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "status"],
+      "properties": {
+        "scope": {
+          "type": "string"
+        },
+        "status": {
+          "enum": ["complete", "partial", "not_available", "not_applicable"]
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

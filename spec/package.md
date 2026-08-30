@@ -4,11 +4,11 @@ This document is normative.
 
 ## 1. Scope
 
-SAF-T Extended is an archive and migration package, not a tax submission
-format. Official SAF-T Financial XML remains unchanged and is the source of
-truth for accounts, tax codes, dimensions and ledger transactions.
+SAF-T Extended is a portable accounting archive and interchange package, not a
+tax submission format. Official SAF-T Financial XML remains unchanged and is
+the source of truth for accounts, tax codes, dimensions and ledger transactions.
 
-Version 0.3 adds only:
+Version 0.3 consists of:
 
 - a predictable customer, supplier, employee, department and project object layer
 - original accounting documents
@@ -70,8 +70,8 @@ established, `transactions` is an empty array; exporters must not invent a link
 from a similar invoice number or amount.
 
 `sourceIds` preserves identifiers assigned to the same bytes by the source
-system. A useful form is `vendor:type:value`, for example
-`tripletex:document:1003779074`.
+system. Values use the form `vendor:type:value`, for example
+`accounting-system:document:1001`.
 
 ## 4. Documents
 
@@ -150,8 +150,8 @@ analysis dimension. Department and project `id` values follow the same rule.
 Non-null project references use IDs from the corresponding customer,
 department, employee or project object file.
 
-The object files deliberately duplicate IDs and names from SAF-T only where
-needed to join records and detect conflicts. They add migration data SAF-T does
+The object files duplicate IDs and names from SAF-T only where needed to join
+records and detect conflicts. They define application master data SAF-T does
 not reliably preserve: active state, source numbers, project hierarchy, project
 ownership and project dates. This gives importers one fixed schema across SAF-T
 versions and vendor-specific generators. Importers must reject conflicting

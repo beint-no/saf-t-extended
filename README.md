@@ -11,9 +11,8 @@ It combines four things:
 4. one manifest containing checksums, document-to-transaction links and any
    source documents the exporting system could not return
 
-That is the complete version 0.3 format. It deliberately excludes generated
-voucher PDFs, reports, duplicate CSV/SQLite views, raw vendor API dumps, and
-additional object types.
+Version 0.3 permits only the files and object types defined by the normative
+specification. A package containing unlisted content is invalid.
 
 ## Why this exists
 
@@ -78,9 +77,9 @@ and media optimization do not change the logical format.
 - formats that can be read without a database engine or proprietary software
 - fail validation instead of silently accepting a partial or ambiguous package
 
-SAF-T Extended is based on practical export and import work. New object types
-should be added only after an implementation demonstrates that SAF-T, the
-existing JSONL objects and source documents cannot carry the needed data.
+New object types require a vendor-neutral schema and a demonstrated accounting
+use case that cannot be represented by SAF-T, the existing JSONL objects or
+source documents.
 
 ## Official sources
 

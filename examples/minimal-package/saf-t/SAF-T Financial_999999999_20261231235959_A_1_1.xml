@@ -64,7 +64,7 @@
         <AnalysisType>P</AnalysisType>
         <AnalysisTypeDescription>Projects</AnalysisTypeDescription>
         <AnalysisID>P1</AnalysisID>
-        <AnalysisIDDescription>Migration</AnalysisIDDescription>
+        <AnalysisIDDescription>Project Alpha</AnalysisIDDescription>
       </AnalysisTypeTableEntry>
     </AnalysisTypeTable>
   </MasterFiles>

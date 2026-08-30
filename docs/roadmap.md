@@ -1,7 +1,7 @@
 # Roadmap
 
-Version 0.3 covers the master data already proven useful by real accounting
-migrations: customers, suppliers, employees, departments and projects.
+Version 0.3 defines customer, supplier, employee, department and project master
+data.
 
 Candidates are ranked by the accounting state an importer would otherwise lose:
 
@@ -13,8 +13,8 @@ Candidates are ranked by the accounting state an importer would otherwise lose:
    cutover so an importer can continue matching without re-importing or losing
    the source bank-line identity. Standardize only after proving a minimal model
    across at least two source systems.
-3. **Products.** Useful for operational continuity after migration, but not
-   needed to reconstruct the books. Pricing, units, discounts, inventory and VAT
+3. **Products.** Useful for operational continuity, but not needed to
+   reconstruct the books. Pricing, units, discounts, inventory and VAT
    defaults make a portable minimal schema less obvious, so keep this outside
    the core until an importer uses it.
 4. **Contacts.** Potentially useful for customer and supplier communication, but

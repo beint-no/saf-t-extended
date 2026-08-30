@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/beint-no/saf-t-extended/blob/main/spec/manifest.schema.json",
-  "title": "SAF-T Extended 0.2 manifest",
+  "title": "SAF-T Extended 0.3 manifest",
   "type": "object",
   "additionalProperties": false,
   "required": ["format", "version", "createdAt", "exporter", "sourceSystem", "company", "period", "safT", "objects", "documents", "missingDocuments"],
   "properties": {
     "format": { "const": "saf-t-extended" },
-    "version": { "const": "0.2" },
+    "version": { "const": "0.3" },
     "createdAt": { "type": "string", "format": "date-time" },
     "exporter": { "$ref": "#/$defs/exporter" },
     "sourceSystem": { "$ref": "#/$defs/sourceSystem" },
@@ -69,11 +69,12 @@
     "objects": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["customers", "suppliers", "employees"],
       "properties": {
         "customers": { "$ref": "#/$defs/objectFile" },
         "suppliers": { "$ref": "#/$defs/objectFile" },
-        "employees": { "$ref": "#/$defs/objectFile" }
+        "employees": { "$ref": "#/$defs/objectFile" },
+        "departments": { "$ref": "#/$defs/objectFile" },
+        "projects": { "$ref": "#/$defs/objectFile" }
       }
     },
     "objectFile": {

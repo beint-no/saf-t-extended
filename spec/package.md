@@ -1,4 +1,4 @@
-# SAF-T Extended 0.2
+# SAF-T Extended 0.3
 
 This document is normative.
 
@@ -8,9 +8,9 @@ SAF-T Extended is an archive and migration package, not a tax submission
 format. Official SAF-T Financial XML remains unchanged and is the source of
 truth for accounts, tax codes, dimensions and ledger transactions.
 
-Version 0.2 adds only:
+Version 0.3 adds only:
 
-- a predictable customer, supplier and employee object layer
+- a predictable customer, supplier, employee, department and project object layer
 - original accounting documents
 - document-to-SAF-T transaction links
 - integrity checksums
@@ -22,17 +22,20 @@ Every package has this layout:
 ```text
 manifest.json
 saf-t/<one or more XML files>
-objects/customers.jsonl
-objects/suppliers.jsonl
-objects/employees.jsonl
+objects/customers.jsonl    # when non-empty
+objects/suppliers.jsonl    # when non-empty
+objects/employees.jsonl    # when non-empty
+objects/departments.jsonl  # when non-empty
+objects/projects.jsonl     # when non-empty
 documents/<source documents, optionally grouped by year>
 ```
 
-`manifest.json`, at least one SAF-T XML file, and all three JSONL files are
-required. A JSONL file with no records is a zero-byte file. `documents/` may be
-absent when there are no documents.
+`manifest.json` and at least one SAF-T XML file are required. Each shown JSONL
+file is present only when it contains at least one record; `objects/` may be
+absent when there are no object records. `documents/` may be absent when there
+are no documents.
 
-No other files or directories are part of version 0.2. A package containing
+No other files or directories are part of version 0.3. A package containing
 unlisted files is invalid.
 
 ## 3. Manifest
@@ -42,7 +45,7 @@ The manifest follows [manifest.schema.json](manifest.schema.json). It contains:
 - the format version and creation time
 - exporter, source system, company and period
 - every SAF-T file and its SHA-256 checksum
-- checksums for the three fixed JSONL files
+- checksums for each present JSONL file
 - every document, its media type, checksum, source identifiers and SAF-T links
 - a `missingDocuments` array naming source documents that the source system
   reported but could not return
@@ -101,7 +104,7 @@ files are invalid. Exporters must identify the content or fail. HTML fragments
 or diagnostic responses produced by an accounting-system endpoint are not
 accounting documents and are ignored.
 
-The document types in version 0.2 are intentionally small:
+The document types in version 0.3 are intentionally small:
 
 | Type | Meaning |
 | --- | --- |
@@ -114,7 +117,7 @@ The document types in version 0.2 are intentionally small:
 
 ## 5. Objects
 
-The required files are:
+The supported files are:
 
 - `objects/customers.jsonl`, validated by
   [customers.schema.json](customers.schema.json)
@@ -122,6 +125,14 @@ The required files are:
   [suppliers.schema.json](suppliers.schema.json)
 - `objects/employees.jsonl`, validated by
   [employees.schema.json](employees.schema.json)
+- `objects/departments.jsonl`, validated by
+  [departments.schema.json](departments.schema.json)
+- `objects/projects.jsonl`, validated by
+  [projects.schema.json](projects.schema.json)
+
+An exporter emits a file if and only if it has records. Empty JSONL files are
+invalid because absence expresses the same fact with less ambiguity and fewer
+files.
 
 Each line is one UTF-8 JSON object followed by LF. Blank lines, comments, a
 top-level JSON array and byte-order marks are invalid. Records are ordered by
@@ -135,11 +146,15 @@ as ambiguous empty strings.
 Customer and supplier `id` values must equal the corresponding SAF-T
 `CustomerID` or `SupplierID` whenever that party is represented in SAF-T.
 Employee `id` must equal the SAF-T analysis ID when the employee is used as an
-analysis dimension.
+analysis dimension. Department and project `id` values follow the same rule.
+Non-null project references use IDs from the corresponding customer,
+department, employee or project object file.
 
-The object files deliberately duplicate a small, stable subset of SAF-T master
-data. This controlled duplication gives importers one fixed schema across SAF-T
-versions and vendor-specific SAF-T generators. Importers must reject conflicting
+The object files deliberately duplicate IDs and names from SAF-T only where
+needed to join records and detect conflicts. They add migration data SAF-T does
+not reliably preserve: active state, source numbers, project hierarchy, project
+ownership and project dates. This gives importers one fixed schema across SAF-T
+versions and vendor-specific generators. Importers must reject conflicting
 non-null identifiers or names instead of silently choosing one representation.
 
 ### Why JSONL

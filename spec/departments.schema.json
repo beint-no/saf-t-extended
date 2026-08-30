@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/beint-no/saf-t-extended/blob/main/spec/departments.schema.json",
+  "title": "SAF-T Extended department record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "number", "name", "active"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "number": { "type": ["string", "null"] },
+    "name": { "type": "string", "minLength": 1 },
+    "active": { "type": "boolean" }
+  }
+}

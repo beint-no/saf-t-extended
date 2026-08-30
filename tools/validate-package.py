@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a SAF-T Extended 0.2 package without third-party dependencies."""
+"""Validate a SAF-T Extended 0.3 package without third-party dependencies."""
 
 import argparse
 import hashlib
@@ -24,6 +24,11 @@ PARTY_FIELDS = {
 EMPLOYEE_FIELDS = {
     "id", "number", "name", "firstName", "lastName", "email", "phone",
     "address", "employmentStartDate", "employmentEndDate", "active",
+}
+DEPARTMENT_FIELDS = {"id", "number", "name", "active"}
+PROJECT_FIELDS = {
+    "id", "number", "name", "customerId", "departmentId",
+    "managerEmployeeId", "parentProjectId", "startDate", "endDate", "active",
 }
 ADDRESS_FIELDS = {"line1", "line2", "postalCode", "city", "region", "countryCode"}
 DOCUMENT_TYPES = {
@@ -136,11 +141,46 @@ def validate_employee(row, location, errors):
         if row[field] is not None:
             try:
                 date.fromisoformat(row[field])
-            except ValueError:
+            except (TypeError, ValueError):
                 errors.append(f"{location}.{field}: invalid ISO date")
     if not isinstance(row["active"], bool):
         errors.append(f"{location}.active: must be a boolean")
     validate_address(row["address"], f"{location}.address", errors)
+
+
+def validate_department(row, location, errors):
+    if not exact_fields(row, DEPARTMENT_FIELDS, location, errors):
+        return
+    if not isinstance(row["id"], str) or not row["id"]:
+        errors.append(f"{location}.id: must be a non-empty string")
+    if not nullable_string(row["number"]):
+        errors.append(f"{location}.number: must be a string or null")
+    if not isinstance(row["name"], str) or not row["name"]:
+        errors.append(f"{location}.name: must be a non-empty string")
+    if not isinstance(row["active"], bool):
+        errors.append(f"{location}.active: must be a boolean")
+
+
+def validate_project(row, location, errors):
+    if not exact_fields(row, PROJECT_FIELDS, location, errors):
+        return
+    if not isinstance(row["id"], str) or not row["id"]:
+        errors.append(f"{location}.id: must be a non-empty string")
+    if not isinstance(row["name"], str) or not row["name"]:
+        errors.append(f"{location}.name: must be a non-empty string")
+    for field in PROJECT_FIELDS - {"id", "name", "active"}:
+        if not nullable_string(row[field]):
+            errors.append(f"{location}.{field}: must be a string or null")
+    for field in ("startDate", "endDate"):
+        if row[field] is not None:
+            try:
+                date.fromisoformat(row[field])
+            except (TypeError, ValueError):
+                errors.append(f"{location}.{field}: invalid ISO date")
+    if row["parentProjectId"] == row["id"]:
+        errors.append(f"{location}.parentProjectId: project cannot be its own parent")
+    if not isinstance(row["active"], bool):
+        errors.append(f"{location}.active: must be a boolean")
 
 
 def validate_jsonl(path, validator, errors):
@@ -151,10 +191,14 @@ def validate_jsonl(path, validator, errors):
         text = body.decode("utf-8")
     except UnicodeDecodeError as exc:
         errors.append(f"{path}: invalid UTF-8: {exc}")
-        return
+        return []
+    if not text:
+        errors.append(f"{path}: empty JSONL files must be omitted")
+        return []
     if text and not text.endswith("\n"):
         errors.append(f"{path}: final record must end with LF")
     ids = []
+    rows = []
     for number, line in enumerate(text.splitlines(), 1):
         location = f"{path.name}:{number}"
         if not line:
@@ -168,10 +212,12 @@ def validate_jsonl(path, validator, errors):
         validator(row, location, errors)
         if isinstance(row, dict) and isinstance(row.get("id"), str):
             ids.append(row["id"])
+            rows.append(row)
     if ids != sorted(ids):
         errors.append(f"{path}: records must be sorted by id")
     if len(ids) != len(set(ids)):
         errors.append(f"{path}: duplicate id")
+    return rows
 
 
 def text_of(parent, name):
@@ -214,8 +260,8 @@ def validate_package(root):
         return [f"invalid or missing manifest.json: {exc}"]
     if not exact_fields(manifest, ROOT_FIELDS, "manifest", errors):
         return errors
-    if manifest["format"] != "saf-t-extended" or manifest["version"] != "0.2":
-        errors.append("manifest: expected SAF-T Extended version 0.2")
+    if manifest["format"] != "saf-t-extended" or manifest["version"] != "0.3":
+        errors.append("manifest: expected SAF-T Extended version 0.3")
     try:
         datetime.fromisoformat(str(manifest["createdAt"]).replace("Z", "+00:00"))
     except ValueError:
@@ -247,9 +293,24 @@ def validate_package(root):
                 saf_t_indexes[item["path"]] = saf_t_index(path, errors)
 
     objects = manifest["objects"]
-    object_names = ("customers", "suppliers", "employees")
-    if exact_fields(objects, set(object_names), "manifest.objects", errors):
-        for name in object_names:
+    object_names = {"customers", "suppliers", "employees", "departments", "projects"}
+    if not isinstance(objects, dict):
+        errors.append("manifest.objects: must be an object")
+    else:
+        unknown_objects = set(objects) - object_names
+        if unknown_objects:
+            errors.append(
+                f"manifest.objects: unknown fields {', '.join(sorted(unknown_objects))}"
+            )
+        validators = {
+            "customers": validate_party,
+            "suppliers": validate_party,
+            "employees": validate_employee,
+            "departments": validate_department,
+            "projects": validate_project,
+        }
+        object_rows = {}
+        for name in sorted(set(objects) & object_names):
             item = objects[name]
             location = f"manifest.objects.{name}"
             if not exact_fields(item, {"sha256"}, location, errors):
@@ -257,7 +318,24 @@ def validate_package(root):
             wrapped = {"path": f"objects/{name}.jsonl", "sha256": item["sha256"]}
             path = checked_file(root, wrapped, "objects/", location, listed, errors)
             if path is not None:
-                validate_jsonl(path, validate_employee if name == "employees" else validate_party, errors)
+                object_rows[name] = validate_jsonl(path, validators[name], errors)
+        object_ids = {
+            name: {row["id"] for row in rows}
+            for name, rows in object_rows.items()
+        }
+        project_references = {
+            "customerId": "customers",
+            "departmentId": "departments",
+            "managerEmployeeId": "employees",
+            "parentProjectId": "projects",
+        }
+        for index, project in enumerate(object_rows.get("projects", []), 1):
+            for field, target in project_references.items():
+                value = project.get(field)
+                if value is not None and value not in object_ids.get(target, set()):
+                    errors.append(
+                        f"projects.jsonl:{index}.{field}: unknown {target} id {value!r}"
+                    )
 
     documents = manifest["documents"]
     document_hashes = set()

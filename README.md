@@ -6,11 +6,12 @@ It combines four things:
 
 1. official SAF-T Financial XML for the ledger
 2. original accounting documents
-3. `customers.jsonl`, `suppliers.jsonl`, and `employees.jsonl`
+3. small JSONL master-data files for customers, suppliers, employees,
+   departments and projects
 4. one manifest containing checksums, document-to-transaction links and any
    source documents the exporting system could not return
 
-That is the complete version 0.2 format. It deliberately excludes generated
+That is the complete version 0.3 format. It deliberately excludes generated
 voucher PDFs, reports, duplicate CSV/SQLite views, raw vendor API dumps, and
 additional object types.
 
@@ -29,17 +30,19 @@ SAF-T Extended fills only those two gaps. It does not replace or modify SAF-T.
 manifest.json
 saf-t/
 objects/
-  customers.jsonl
-  suppliers.jsonl
-  employees.jsonl
+  customers.jsonl    # when non-empty
+  suppliers.jsonl    # when non-empty
+  employees.jsonl    # when non-empty
+  departments.jsonl  # when non-empty
+  projects.jsonl     # when non-empty
 documents/
 ```
 
-All three JSONL files are required, even when empty. Every field defined by their
-schemas is emitted for every record; an unknown value is `null`. Documents are
-stored once and linked to exact SAF-T transactions in `manifest.json` whenever
-the relationship is known. `missingDocuments` is also always present and is an
-empty array when every discovered document was exported.
+Each JSONL file is written and listed only when it has at least one record. Every
+field defined by its schema is emitted for every record; an unknown value is
+`null`. Documents are stored once and linked to exact SAF-T transactions in
+`manifest.json` whenever the relationship is known. `missingDocuments` is also
+always present and is an empty array when every discovered document was exported.
 
 The normative rules are in [spec/package.md](spec/package.md). JSON Schemas are
 in [`spec/`](spec/), and [`examples/minimal-package/`](examples/minimal-package/)
@@ -63,7 +66,7 @@ and media optimization do not change the logical format.
 
 ## Implementer
 
-[ReAI](https://reai.no) is the only listed implementer of version 0.2. See
+[ReAI](https://reai.no) is the only listed implementer of version 0.3. See
 [IMPLEMENTERS.md](IMPLEMENTERS.md).
 
 ## Design principles
@@ -76,8 +79,8 @@ and media optimization do not change the logical format.
 - fail validation instead of silently accepting a partial or ambiguous package
 
 SAF-T Extended is based on practical export and import work. New object types
-should be added only after an implementation demonstrates that SAF-T plus the
-three required JSONL files cannot carry the needed data.
+should be added only after an implementation demonstrates that SAF-T, the
+existing JSONL objects and source documents cannot carry the needed data.
 
 ## Official sources
 

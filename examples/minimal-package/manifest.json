@@ -1,6 +1,6 @@
 {
   "format": "saf-t-extended",
-  "version": "0.2",
+  "version": "0.3",
   "createdAt": "2026-07-09T00:00:00Z",
   "exporter": {
     "name": "ReAI",
@@ -22,7 +22,7 @@
   "safT": [
     {
       "path": "saf-t/SAF-T Financial_999999999_20261231235959_A_1_1.xml",
-      "sha256": "889e018e5dbc3823adaf9d7411830eca308233ff365b7c619d96f9509179400a",
+      "sha256": "a645b97ccedd120bd6d23cd7f1cb2f75acd8a0c48720a9109ebd3283a6bf338c",
       "version": "1.40"
     }
   ],
@@ -35,6 +35,12 @@
     },
     "employees": {
       "sha256": "65cf8b6851d09df399d3cd5c855f02780ba1065be9b43f1d4005278036a5cf56"
+    },
+    "departments": {
+      "sha256": "4e6f0c1d36cadabe02258180641dcd309142aa97aa137a3d3814c63fb8432ef1"
+    },
+    "projects": {
+      "sha256": "7ecc368378e708042eea623a6da966a4c78acec7513f43509c330770a32b88ae"
     }
   },
   "documents": [

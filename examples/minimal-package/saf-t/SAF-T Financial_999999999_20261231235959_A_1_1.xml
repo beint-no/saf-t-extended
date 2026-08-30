@@ -54,6 +54,18 @@
         <AnalysisID>8000</AnalysisID>
         <AnalysisIDDescription>Ola Nordmann</AnalysisIDDescription>
       </AnalysisTypeTableEntry>
+      <AnalysisTypeTableEntry>
+        <AnalysisType>D</AnalysisType>
+        <AnalysisTypeDescription>Departments</AnalysisTypeDescription>
+        <AnalysisID>D1</AnalysisID>
+        <AnalysisIDDescription>Operations</AnalysisIDDescription>
+      </AnalysisTypeTableEntry>
+      <AnalysisTypeTableEntry>
+        <AnalysisType>P</AnalysisType>
+        <AnalysisTypeDescription>Projects</AnalysisTypeDescription>
+        <AnalysisID>P1</AnalysisID>
+        <AnalysisIDDescription>Migration</AnalysisIDDescription>
+      </AnalysisTypeTableEntry>
     </AnalysisTypeTable>
   </MasterFiles>
   <GeneralLedgerEntries>

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/beint-no/saf-t-extended/blob/main/spec/projects.schema.json",
+  "title": "SAF-T Extended project record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "number", "name", "customerId", "departmentId", "managerEmployeeId", "parentProjectId", "startDate", "endDate", "active"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "number": { "type": ["string", "null"] },
+    "name": { "type": "string", "minLength": 1 },
+    "customerId": { "type": ["string", "null"] },
+    "departmentId": { "type": ["string", "null"] },
+    "managerEmployeeId": { "type": ["string", "null"] },
+    "parentProjectId": { "type": ["string", "null"] },
+    "startDate": { "type": ["string", "null"], "format": "date" },
+    "endDate": { "type": ["string", "null"], "format": "date" },
+    "active": { "type": "boolean" }
+  }
+}

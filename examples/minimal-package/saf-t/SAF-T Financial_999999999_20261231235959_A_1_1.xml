@@ -60,6 +60,28 @@
     <NumberOfEntries>1</NumberOfEntries>
     <TotalDebit>100.00</TotalDebit>
     <TotalCredit>100.00</TotalCredit>
+    <Journal>
+      <JournalID>GL</JournalID>
+      <Description>General ledger</Description>
+      <Transaction>
+        <TransactionID>1001</TransactionID>
+        <Period>1</Period>
+        <PeriodYear>2026</PeriodYear>
+        <TransactionDate>2026-01-15</TransactionDate>
+        <Description>Supplier invoice INV-1001</Description>
+        <SystemID>voucher:1001</SystemID>
+        <Line>
+          <RecordID>1</RecordID>
+          <AccountID>2400</AccountID>
+          <CreditAmount><Amount>100.00</Amount></CreditAmount>
+        </Line>
+        <Line>
+          <RecordID>2</RecordID>
+          <AccountID>4000</AccountID>
+          <DebitAmount><Amount>100.00</Amount></DebitAmount>
+        </Line>
+      </Transaction>
+    </Journal>
   </GeneralLedgerEntries>
   <SourceDocuments/>
 </AuditFile>

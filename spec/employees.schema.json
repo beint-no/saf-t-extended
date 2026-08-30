@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/beint-no/saf-t-extended/blob/main/spec/employees.schema.json",
+  "title": "SAF-T Extended employee record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "number", "name", "firstName", "lastName", "email", "phone", "address", "employmentStartDate", "employmentEndDate", "active"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "number": { "type": ["string", "null"] },
+    "name": { "type": "string", "minLength": 1 },
+    "firstName": { "type": ["string", "null"] },
+    "lastName": { "type": ["string", "null"] },
+    "email": { "type": ["string", "null"] },
+    "phone": { "type": ["string", "null"] },
+    "address": { "oneOf": [{ "type": "null" }, { "$ref": "customers.schema.json#/$defs/address" }] },
+    "employmentStartDate": { "type": ["string", "null"], "format": "date" },
+    "employmentEndDate": { "type": ["string", "null"], "format": "date" },
+    "active": { "type": "boolean" }
+  }
+}

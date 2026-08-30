@@ -1,146 +1,87 @@
 # SAF-T Extended
 
-SAF-T Extended is an open export package profile for complete accounting-data
-portability.
+SAF-T Extended is a small, vendor-neutral accounting archive format.
 
-It keeps official SAF-T Financial XML as the ledger and master-data core, and
-defines how an accounting system should package the files needed to archive,
-audit, inspect or migrate the accounting records.
+It combines four things:
 
-The profile does not replace Norwegian SAF-T Financial, EHF or Peppol. It uses
-those standards first and adds only package-level conventions for files,
-checksums, completeness and optional sidecar data.
+1. official SAF-T Financial XML for the ledger
+2. original accounting documents
+3. `customers.jsonl`, `suppliers.jsonl`, and `employees.jsonl`
+4. one manifest containing checksums, document-to-transaction links and any
+   source documents the exporting system could not return
 
-## Problem
+That is the complete version 0.2 format. It deliberately excludes generated
+voucher PDFs, reports, duplicate CSV/SQLite views, raw vendor API dumps, and
+additional object types.
 
-A SAF-T XML file is essential, but it is often not enough for a complete and
-usable export from an accounting system.
+## Why this exists
 
-Accounting records commonly depend on files and objects outside the ledger XML:
+SAF-T is the right interchange format for accounts, tax codes, dimensions and
+ledger transactions. It is less suitable as a simple application import format
+for customer, supplier and employee records, and it does not carry the source
+files behind the postings.
 
-- original EHF/Peppol invoice and credit note XML
-- invoice PDFs and other human-readable renderings
-- receipt images and voucher attachments
-- bank, payment and import documentation
-- customer, supplier and project documents
-- contracts, engagement letters, KYC/AML files and correspondence
-- system identifiers needed to reconcile an export with the source system
+SAF-T Extended fills only those two gaps. It does not replace or modify SAF-T.
 
-When these files are missing, unlisted or exported in a vendor-specific way, the
-customer may technically have a ledger export but still lack a practical archive
-or migration package.
+## Package
 
-## Goal
+```text
+manifest.json
+saf-t/
+objects/
+  customers.jsonl
+  suppliers.jsonl
+  employees.jsonl
+documents/
+```
 
-The goal is a complete, auditable export package that can be produced by one
-accounting system and read by another system, auditor, accountant, customer or
-authority without private knowledge of the exporting vendor's database.
+All three JSONL files are required, even when empty. Every field defined by their
+schemas is emitted for every record; an unknown value is `null`. Documents are
+stored once and linked to exact SAF-T transactions in `manifest.json` whenever
+the relationship is known. `missingDocuments` is also always present and is an
+empty array when every discovered document was exported.
 
-A valid export should make it possible to answer:
+The normative rules are in [spec/package.md](spec/package.md). JSON Schemas are
+in [`spec/`](spec/), and [`examples/minimal-package/`](examples/minimal-package/)
+is a complete package that passes the validator:
 
-- which SAF-T files are included?
-- which posting-related files are included?
-- which optional non-posting documents and sidecar objects are included?
-- which data was unavailable, intentionally omitted or outside the selected
-  export scope?
-- whether files were changed after export?
-
-## Minimum Valid Export
-
-The minimum valid export is intentionally small enough for accounting-system
-vendors to adopt:
-
-1. official SAF-T Financial XML for the selected period and scope
-2. every file in the source system that relates directly to postings in that
-   SAF-T export
-3. a manifest that lists package files with path, document type, media type and
-   SHA-256 checksum, plus SAF-T references where available
-4. structured omissions for posting-related files that are unavailable or cannot
-   be exported
-
-Posting-related files include original EHF/Peppol invoice and credit note XML,
-invoice PDFs/renderings when present, voucher attachments, receipts, bank and
-payment documentation, and other files needed to understand the postings in the
-SAF-T file.
-
-Everything beyond that minimum is optional, but recommended when the source
-system has the data and the export purpose requires it.
-
-## EHF and Peppol Invoices
-
-When an invoice or credit note exists as EHF Billing 3.0 or Peppol BIS Billing
-3.0 XML, include the original XML as a posting-related file.
-
-If the same invoice also has a PDF or other file in the source system, include
-that file too.
-
-The manifest does not need to re-model relationships that already exist in
-SAF-T, in the EHF/Peppol XML, or in the source document reference. It only needs
-to list the exported files, checksums, document types and SAF-T references where
-available.
-
-## Recommended Additions
-
-Recommended additions include:
-
-| Area | Recommendation |
-| --- | --- |
-| Customer and supplier master data | Complete use of available SAF-T customer and supplier fields, with sidecars only for data SAF-T cannot represent. |
-| Employee information | Minimal employee sidecar data when employees are used as accounting dimensions or needed for archive, audit or migration. |
-| Non-posting accounting documents | Contracts, KYC/AML documents, engagement letters, correspondence and other relevant documents not tied directly to a posting. |
-| Migration metadata | Stable source-system identifiers and sidecar objects needed by a receiving system. |
-
-See [spec/package.md](spec/package.md) and
-[spec/manifest.schema.json](spec/manifest.schema.json).
-
-## Validation
-
-The repository includes a small validator for package smoke tests:
-
-```bash
+```sh
 python3 tools/validate-package.py examples/minimal-package
 ```
 
-It checks that the manifest parses, referenced files exist, checksums match,
-document types are registered, file IDs are unique, and the minimum
-completeness statements are present.
+## Distribution
 
-## Implementers
+A package is distributed as a Zstandard-compressed tar archive named
+`*.tar.zst`. Extract it with:
 
-Accounting-system vendors can be listed in
-[IMPLEMENTERS.md](IMPLEMENTERS.md) after showing that their export supports the
-minimum valid export.
+```sh
+zstd -dc export.tar.zst | tar -xf -
+```
 
-A practical proof is a sample package that passes the validator and contains
-SAF-T XML plus all posting-related files available in the source system for the
-selected scope.
+The uncompressed directory and the archive contain the same package. Compression
+and media optimization do not change the logical format.
 
-## Feedback
+## Implementer
 
-Technical feedback on the minimum export package can be added to
-[issue #1](https://github.com/beint-no/saf-t-extended/issues/1).
+[ReAI](https://reai.no) is the only listed implementer of version 0.2. See
+[IMPLEMENTERS.md](IMPLEMENTERS.md).
 
-## Privacy and Security
+## Design principles
 
-Accounting exports can contain personal data, confidential business documents
-and bank information.
+- one canonical representation of each fact
+- original evidence, not export-generated presentations
+- fixed names and schemas instead of vendor conventions
+- checksums and explicit transaction links
+- formats that can be read without a database engine or proprietary software
+- fail validation instead of silently accepting a partial or ambiguous package
 
-The package should include only data needed for the selected purpose, and should
-make omissions explicit. Sensitive fields such as national identity numbers,
-private addresses, health data, payroll details and bank account details should
-not be included unless there is a clear legal, audit or migration need.
+SAF-T Extended is based on practical export and import work. New object types
+should be added only after an implementation demonstrates that SAF-T plus the
+three required JSONL files cannot carry the needed data.
 
-## Roadmap
-
-See [docs/roadmap.md](docs/roadmap.md).
-
-## Official Sources
-
-This profile is intended to align with the official Norwegian SAF-T Financial,
-EHF and Peppol documentation:
+## Official sources
 
 - https://www.skatteetaten.no/en/business-and-organisation/start-and-run/best-practices-accounting-and-cash-register-systems/saf-t-financial/
-- https://www.skatteetaten.no/en/business-and-organisation/start-and-run/best-practices-accounting-and-cash-register-systems/saf-t-financial/documentation/
 - https://github.com/Skatteetaten/saf-t
 - https://anskaffelser.dev/postaward/g3/spec/current/billing-3.0/norway/
 - https://docs.peppol.eu/poacc/billing/3.0/bis/

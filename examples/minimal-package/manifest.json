@@ -1,16 +1,14 @@
 {
-  "profile": "saf-t-extended-package",
-  "profileVersion": "0.1",
-  "packageId": "example-999999999-2026",
+  "format": "saf-t-extended",
+  "version": "0.2",
   "createdAt": "2026-07-09T00:00:00Z",
   "exporter": {
-    "name": "Example Exporter AS",
-    "organizationNumber": "999999999",
-    "contactEmail": "export@example.invalid"
+    "name": "ReAI",
+    "url": "https://reai.no",
+    "software": "example-exporter"
   },
   "sourceSystem": {
     "name": "Example Accounting",
-    "vendor": "Example Vendor",
     "version": "1.0"
   },
   "company": {
@@ -18,70 +16,47 @@
     "organizationNumber": "999999999"
   },
   "period": {
-    "startDate": "2026-01-01",
-    "endDate": "2026-12-31"
+    "start": "2026-01-01",
+    "end": "2026-12-31"
   },
-  "safTFiles": [
+  "safT": [
     {
       "path": "saf-t/SAF-T Financial_999999999_20261231235959_A_1_1.xml",
-      "sha256": "4e8ef581ab56ed859733453e79c0c5a4d4b238bfd757e26227fb4f6f969614a4",
-      "safTVersion": "1.40",
-      "selection": "A"
+      "sha256": "889e018e5dbc3823adaf9d7411830eca308233ff365b7c619d96f9509179400a",
+      "version": "1.40"
     }
   ],
-  "files": [
+  "objects": {
+    "customers": {
+      "sha256": "87d4b308a269197c2f334a5780f5a6f6321bb4ed6d405420a3cb90c437967657"
+    },
+    "suppliers": {
+      "sha256": "16905e57c16c966df530403157f1555638b114036ff19e573a0b79a4a76a4e79"
+    },
+    "employees": {
+      "sha256": "65cf8b6851d09df399d3cd5c855f02780ba1065be9b43f1d4005278036a5cf56"
+    }
+  },
+  "documents": [
     {
-      "id": "file-invoice-1001-xml",
-      "path": "files/postings/2026/INV-1001.xml",
+      "path": "documents/2026/INV-1001.xml",
       "sha256": "1d4e11ef87413d5228937058478e854df638db693db225c4a4f8c6595781ee9c",
       "mediaType": "application/xml",
-      "documentType": "invoice",
-      "title": "Incoming EHF invoice INV-1001",
-      "safTReferences": [
-        {
-          "journalId": "GL",
-          "transactionId": "1001",
-          "recordId": "1",
-          "sourceDocumentId": "INV-1001",
-          "supplierId": "24000"
-        }
+      "type": "invoice",
+      "sourceIds": [
+        "example:document:INV-1001"
       ],
-      "systemReferences": [
+      "transactions": [
         {
-          "type": "internalVoucherId",
-          "value": "voucher:1001"
-        }
-      ]
-    },
-    {
-      "id": "file-invoice-1001-pdf",
-      "path": "files/postings/2026/INV-1001.pdf",
-      "sha256": "e1cfe54f9621f753f670b6a5702f934358215f69ea5addd37020dbde9d74421e",
-      "mediaType": "application/pdf",
-      "documentType": "invoice-rendering",
-      "title": "PDF copy of incoming EHF invoice INV-1001",
-      "safTReferences": [
-        {
+          "safTFile": "saf-t/SAF-T Financial_999999999_20261231235959_A_1_1.xml",
           "journalId": "GL",
           "transactionId": "1001",
-          "recordId": "1",
-          "sourceDocumentId": "INV-1001",
-          "supplierId": "24000"
+          "recordIds": [
+            "1"
+          ]
         }
       ]
     }
   ],
-  "completeness": [
-    {
-      "scope": "saf-t-xml",
-      "status": "complete",
-      "note": "The package contains the available SAF-T XML export for the selected period."
-    },
-    {
-      "scope": "posting-related-documents",
-      "status": "complete",
-      "note": "The package contains the posting-related files available in the source system for the selected period."
-    }
-  ],
-  "knownOmissions": []
+  "missingDocuments": []
 }

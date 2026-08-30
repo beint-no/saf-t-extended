@@ -1,239 +1,169 @@
-# SAF-T Extended Package Profile
+# SAF-T Extended 0.2
 
-Version: 0.1
+This document is normative.
 
-## Purpose
+## 1. Scope
 
-SAF-T Extended defines a package profile for exporting complete accounting data
-from an accounting system.
+SAF-T Extended is an archive and migration package, not a tax submission
+format. Official SAF-T Financial XML remains unchanged and is the source of
+truth for accounts, tax codes, dimensions and ledger transactions.
 
-The package is not a new tax submission format. It is a portability profile
-around official SAF-T Financial:
+Version 0.2 adds only:
 
-- SAF-T XML remains the canonical ledger and master-data export.
-- Binary files remain ordinary files.
-- A manifest lists files, checksums and available SAF-T references.
-- Sidecar data is optional and used only where SAF-T cannot model the data
-  sufficiently.
+- a predictable customer, supplier and employee object layer
+- original accounting documents
+- document-to-SAF-T transaction links
+- integrity checksums
 
-Where official SAF-T has a suitable field or structure, exporters should use
-SAF-T instead of inventing a parallel sidecar format.
+## 2. Required layout
 
-## Package Layout
+Every package has this layout:
 
 ```text
-saf-t-extended-package/
-  manifest.json
-  saf-t/
-    SAF-T Financial_999999999_20260131235959_A_1_1.xml
-  files/
-    postings/
-      2026/
-        INV-1001.xml
-        INV-1001.pdf
-        receipt-42.jpg
-    documents/
-      contracts/
-        customer-agreement-42.pdf
-  objects/
-    employees.jsonl
+manifest.json
+saf-t/<one or more XML files>
+objects/customers.jsonl
+objects/suppliers.jsonl
+objects/employees.jsonl
+documents/<source documents, optionally grouped by year>
 ```
 
-Standard directories:
+`manifest.json`, at least one SAF-T XML file, and all three JSONL files are
+required. A JSONL file with no records is a zero-byte file. `documents/` may be
+absent when there are no documents.
 
-- `saf-t/` contains official SAF-T Financial XML files.
-- `files/postings/` contains all files related directly to postings in the
-  selected SAF-T export.
-- `files/documents/` contains optional accounting documents that are not tied
-  directly to a posting.
-- `objects/` contains optional sidecar object files that SAF-T does not express
-  adequately.
+No other files or directories are part of version 0.2. A package containing
+unlisted files is invalid.
 
-## Minimum Valid Export
+## 3. Manifest
 
-The minimum valid export is:
+The manifest follows [manifest.schema.json](manifest.schema.json). It contains:
 
-- `manifest.json`
-- at least one `saf-t/*.xml` file
-- every file in the source system that relates directly to postings in the
-  SAF-T selection
-- every exported file listed in `manifest.json`
-- SHA-256 checksum for every listed file
-- completeness statements for SAF-T XML and posting-related documents
-- structured omissions for posting-related files that are unavailable or cannot
-  be exported
+- the format version and creation time
+- exporter, source system, company and period
+- every SAF-T file and its SHA-256 checksum
+- checksums for the three fixed JSONL files
+- every document, its media type, checksum, source identifiers and SAF-T links
+- a `missingDocuments` array naming source documents that the source system
+  reported but could not return
 
-Posting-related files include:
+There is no separate index, duplicate report, completeness report or database.
+`missingDocuments` is always present and is empty for a complete export. Each
+non-empty entry has only a stable source ID and `not-found` or `not-exportable`;
+request IDs, stack traces and other diagnostics stay outside the archive.
 
-- original EHF/Peppol invoice and credit note XML
-- invoice and credit note PDFs when present
-- voucher attachments
-- receipt images
+### Transaction links
+
+Each known document relationship identifies:
+
+- the SAF-T file path
+- `JournalID`
+- `TransactionID`
+- zero or more line-level `RecordID` values
+
+An empty `recordIds` array means the document relates to the whole transaction.
+A document can link to several transactions. If no reliable relationship can be
+established, `transactions` is an empty array; exporters must not invent a link
+from a similar invoice number or amount.
+
+`sourceIds` preserves identifiers assigned to the same bytes by the source
+system. A useful form is `vendor:type:value`, for example
+`tripletex:document:1003779074`.
+
+## 4. Documents
+
+Include source evidence used to understand or substantiate the accounting:
+
+- EHF/Peppol invoices and credit notes
+- invoice or credit-note files actually received or sent
+- receipts and voucher attachments
 - bank and payment documentation
-- other files needed to understand, verify or audit the postings in the SAF-T
-  file
+- payroll accounting documentation
+- other original attachments
 
-The minimum is deliberately practical. A vendor should be able to implement it
-without solving full migration of every master-data object first.
+Do not include a PDF, HTML page, report or text file generated during export
+from data already present in SAF-T or the JSONL files. A source system's
+on-demand rendering is included only when it is the only retained readable
+source document.
 
-## Manifest
+When EHF XML and a PDF were both independently received, sent or retained as
+source artifacts, both are documents. When the PDF is merely a rendering of the
+EHF generated for export, only the EHF is included.
 
-The manifest describes the export package and makes completeness auditable.
+Identical bytes are stored once. PDFs may also be stored once when a full stream
+comparison proves that they differ only in generated PDF document IDs or
+creation/modification timestamps and they link to the same SAF-T transaction.
+Their source identifiers and transaction links are combined in the one manifest
+entry. Visual similarity alone is not sufficient for deduplication.
 
-It should include:
+Filenames must have an extension matching the detected content. Generic `.bin`
+files are invalid. Exporters must identify the content or fail. HTML fragments
+or diagnostic responses produced by an accounting-system endpoint are not
+accounting documents and are ignored.
 
-- exporter identity
-- accounting system identity
-- exported company
-- export period
-- SAF-T XML files
-- exported files and their checksums
-- SAF-T references where available
-- optional sidecar object files
-- completeness statements
-- known omissions
+The document types in version 0.2 are intentionally small:
 
-See [manifest.schema.json](manifest.schema.json).
-See [document-types.md](document-types.md) for the document type registry.
+| Type | Meaning |
+| --- | --- |
+| `invoice` | Invoice source document, including EHF/Peppol XML or a retained PDF. |
+| `credit-note` | Credit-note source document. |
+| `receipt` | Receipt supporting a transaction. |
+| `attachment` | Other voucher or accounting attachment. |
+| `bank-document` | Bank statement, payment file or payment confirmation. |
+| `payroll-document` | Payslip or other payroll accounting evidence. |
 
-## EHF and Peppol Invoices
+## 5. Objects
 
-When an invoice or credit note exists as EHF Billing 3.0 or Peppol BIS Billing
-3.0 XML, the original XML should be included as a posting-related file.
+The required files are:
 
-If the source system also has a PDF rendering of the invoice, include the PDF as
-another posting-related file.
+- `objects/customers.jsonl`, validated by
+  [customers.schema.json](customers.schema.json)
+- `objects/suppliers.jsonl`, validated by
+  [suppliers.schema.json](suppliers.schema.json)
+- `objects/employees.jsonl`, validated by
+  [employees.schema.json](employees.schema.json)
 
-The package should not require a separate invoice relationship model. The
-manifest should list each file and include SAF-T references where available. If
-SAF-T or the EHF/Peppol XML already identifies the invoice, the manifest does
-not need to repeat all invoice metadata.
+Each line is one UTF-8 JSON object followed by LF. Blank lines, comments, a
+top-level JSON array and byte-order marks are invalid. Records are ordered by
+`id` using Unicode code-point order. IDs are strings so numeric and non-numeric
+source identifiers survive unchanged.
 
-If a posting-related file exists in the source system but cannot be exported,
-the package should include a structured `knownOmissions` entry explaining the
-reason.
+Every schema field is present on every record. Use `null` for an unknown scalar
+or object value. Do not omit keys, add vendor fields, or serialize empty values
+as ambiguous empty strings.
 
-## Linking Files to SAF-T
+Customer and supplier `id` values must equal the corresponding SAF-T
+`CustomerID` or `SupplierID` whenever that party is represented in SAF-T.
+Employee `id` must equal the SAF-T analysis ID when the employee is used as an
+analysis dimension.
 
-Attachments should not be embedded in SAF-T XML. They should be ordinary files
-listed in the manifest.
+The object files deliberately duplicate a small, stable subset of SAF-T master
+data. This controlled duplication gives importers one fixed schema across SAF-T
+versions and vendor-specific SAF-T generators. Importers must reject conflicting
+non-null identifiers or names instead of silently choosing one representation.
 
-Each file can link to one or more SAF-T references:
+### Why JSONL
 
-- `journalId`
-- `transactionId`
-- `recordId`
-- `sourceDocumentId`
-- `voucherNumber`
-- `customerId`
-- `supplierId`
-- `ownerId`
-- `analysisType` and `analysisId`
+JSONL is used because it:
 
-When the accounting system has stronger internal identifiers, include them as
-`systemReferences` in addition to the SAF-T references.
+- can be streamed one record at a time
+- preserves strings, numbers, booleans, nulls and nested addresses without CSV
+  conventions
+- is readable by standard JSON libraries in essentially every language
+- supports per-record validation and recovery
+- needs no database engine, binary columnar reader or vendor software
 
-## Posting Attachments
+CSV cannot represent the nested and nullable fields without additional rules.
+SQLite and columnar formats are binary containers with a larger implementation
+surface. A single JSON array requires reading and rewriting the whole file.
+JSONL is the smallest practical common denominator for archival imports.
 
-Files related to postings should be placed under `files/postings/`.
+## 6. Packaging
 
-Examples:
+The transport form is a POSIX-compatible tar archive compressed with Zstandard
+and named `*.tar.zst`. Paths must be relative, must not contain `..`, and must
+not be symbolic links. The extracted package must validate identically to the
+archive contents.
 
-- original EHF/Peppol invoice XML
-- PDF invoice copy
-- receipt image
-- bank transaction attachment
-- voucher documentation that is not an invoice or credit note
-- payment confirmation file
-
-Each file should have a manifest entry with:
-
-- `id`
-- `documentType`
-- `path`
-- `sha256`
-- `mediaType`
-- `safTReferences` when available
-- `systemReferences` when useful
-
-The `documentType` value must come from the registry. The profile should expand
-the registry when a generally useful new document type is needed rather than
-allowing private permanent labels.
-
-## Non-Posting Documents
-
-Accounting systems often contain documents that are relevant to bookkeeping,
-audit, AML/KYC, customer work or migration, but are not tied to a specific
-posting.
-
-Examples:
-
-- customer or supplier contracts
-- accountant engagement letters
-- KYC and AML documents
-- correspondence
-- payroll-related accounting documentation
-- system reports
-- import/export logs
-
-These files are optional. When included, place them under `files/documents/` and
-list them in the manifest.
-
-## Customers and Suppliers
-
-Use SAF-T MasterFiles for customers and suppliers whenever possible.
-
-SAF-T Financial already has customer and supplier master structures with:
-
-- customer/supplier ID
-- registration number
-- name
-- address
-- contact information
-- tax registrations
-- bank accounts
-- balance accounts
-- party analysis
-
-This profile should not duplicate ordinary customer and supplier master data in
-separate files by default.
-
-Instead, this profile standardizes stricter export expectations:
-
-- include all optional SAF-T customer/supplier fields that are available in the
-  exporting system
-- preserve stable IDs used in postings
-- preserve registration numbers and tax IDs when available
-- include contacts, addresses, bank accounts and balance accounts when present
-- use sidecar files only for fields with no clear SAF-T representation
-
-## Employees
-
-Employees should not be forced into the customer/supplier structures.
-
-SAF-T can represent employees as analysis dimensions, for example through
-`AnalysisTypeTable` and line-level `Analysis` references. That is useful for
-accounting dimensions such as employee, department, project, cost center or
-owner.
-
-SAF-T Financial does not provide a full employee master structure for ordinary
-HR/payroll information. If employee data is included, use
-`objects/employees.jsonl` as a sidecar file and link it to SAF-T analysis
-identifiers where relevant.
-
-Employee sidecar data should be minimized and purpose-bound because it can
-contain sensitive personal data.
-
-## Extension Rule
-
-When deciding where data belongs:
-
-1. If official SAF-T has a valid field or structure, use SAF-T.
-2. If official SAF-T has an identifier but not the binary content, store the file
-   and link it in the manifest.
-3. If official SAF-T can represent the data as an analysis dimension, use SAF-T
-   for the dimension and use sidecar data only for extra object details.
-4. If official SAF-T cannot represent the object safely or clearly, use a
-   sidecar file in `objects/`.
-5. If the data is system-specific, include it only if it helps audit,
-   bookkeeping, archiving or migration.
+Media may be optimized before checksums are calculated. Signed, encrypted or
+otherwise integrity-protected files must remain byte-identical.

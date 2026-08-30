@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/beint-no/saf-t-extended/blob/main/spec/customers.schema.json",
+  "title": "SAF-T Extended customer record",
+  "$ref": "#/$defs/party",
+  "$defs": {
+    "party": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "number", "name", "type", "organizationNumber", "vatNumber", "email", "phone", "invoiceEmail", "currency", "paymentTermsDays", "bankAccount", "iban", "bic", "address", "deliveryAddress", "active"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "number": { "type": ["string", "null"] },
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["company", "person", "unknown"] },
+        "organizationNumber": { "type": ["string", "null"] },
+        "vatNumber": { "type": ["string", "null"] },
+        "email": { "type": ["string", "null"] },
+        "phone": { "type": ["string", "null"] },
+        "invoiceEmail": { "type": ["string", "null"] },
+        "currency": { "type": ["string", "null"] },
+        "paymentTermsDays": { "type": ["integer", "null"], "minimum": 0 },
+        "bankAccount": { "type": ["string", "null"] },
+        "iban": { "type": ["string", "null"] },
+        "bic": { "type": ["string", "null"] },
+        "address": { "$ref": "#/$defs/nullableAddress" },
+        "deliveryAddress": { "$ref": "#/$defs/nullableAddress" },
+        "active": { "type": "boolean" }
+      }
+    },
+    "nullableAddress": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/address" }] },
+    "address": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["line1", "line2", "postalCode", "city", "region", "countryCode"],
+      "properties": {
+        "line1": { "type": ["string", "null"] },
+        "line2": { "type": ["string", "null"] },
+        "postalCode": { "type": ["string", "null"] },
+        "city": { "type": ["string", "null"] },
+        "region": { "type": ["string", "null"] },
+        "countryCode": { "type": ["string", "null"], "pattern": "^[A-Z]{2}$" }
+      }
+    }
+  }
+}

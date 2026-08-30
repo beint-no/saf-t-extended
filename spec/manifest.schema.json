@@ -1,363 +1,120 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/beint-no/saf-t-extended/blob/main/spec/manifest.schema.json",
-  "title": "SAF-T Extended Package Manifest",
+  "title": "SAF-T Extended 0.2 manifest",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "profile",
-    "packageId",
-    "profileVersion",
-    "createdAt",
-    "exporter",
-    "company",
-    "period",
-    "safTFiles",
-    "files",
-    "completeness",
-    "knownOmissions"
-  ],
+  "required": ["format", "version", "createdAt", "exporter", "sourceSystem", "company", "period", "safT", "objects", "documents", "missingDocuments"],
   "properties": {
-    "profile": {
-      "const": "saf-t-extended-package"
-    },
-    "profileVersion": {
-      "type": "string",
-      "default": "0.1"
-    },
-    "packageId": {
-      "type": "string",
-      "minLength": 1
-    },
-    "createdAt": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "exporter": {
-      "$ref": "#/$defs/exporter"
-    },
-    "sourceSystem": {
-      "$ref": "#/$defs/sourceSystem"
-    },
-    "company": {
-      "$ref": "#/$defs/company"
-    },
-    "period": {
-      "$ref": "#/$defs/period"
-    },
-    "safTFiles": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "$ref": "#/$defs/safTFile"
-      }
-    },
-    "files": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/packageFile"
-      }
-    },
-    "objectFiles": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/objectFile"
-      },
-      "default": []
-    },
-    "completeness": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/completenessStatement"
-      },
-      "default": []
-    },
-    "knownOmissions": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/knownOmission"
-      },
-      "default": []
-    }
+    "format": { "const": "saf-t-extended" },
+    "version": { "const": "0.2" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "exporter": { "$ref": "#/$defs/exporter" },
+    "sourceSystem": { "$ref": "#/$defs/sourceSystem" },
+    "company": { "$ref": "#/$defs/company" },
+    "period": { "$ref": "#/$defs/period" },
+    "safT": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/safTFile" } },
+    "objects": { "$ref": "#/$defs/objects" },
+    "documents": { "type": "array", "items": { "$ref": "#/$defs/document" } },
+    "missingDocuments": { "type": "array", "items": { "$ref": "#/$defs/missingDocument" } }
   },
   "$defs": {
     "exporter": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name"],
+      "required": ["name", "url", "software"],
       "properties": {
-        "name": {
-          "type": "string"
-        },
-        "organizationNumber": {
-          "type": "string"
-        },
-        "contactEmail": {
-          "type": "string",
-          "format": "email"
-        }
+        "name": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri" },
+        "software": { "type": "string", "minLength": 1 }
       }
     },
     "sourceSystem": {
       "type": "object",
       "additionalProperties": false,
+      "required": ["name", "version"],
       "properties": {
-        "name": {
-          "type": "string"
-        },
-        "vendor": {
-          "type": "string"
-        },
-        "version": {
-          "type": "string"
-        },
-        "tenantId": {
-          "type": "string"
-        }
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": ["string", "null"] }
       }
     },
     "company": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name"],
+      "required": ["name", "organizationNumber"],
       "properties": {
-        "name": {
-          "type": "string"
-        },
-        "organizationNumber": {
-          "type": "string"
-        }
+        "name": { "type": "string", "minLength": 1 },
+        "organizationNumber": { "type": "string", "minLength": 1 }
       }
     },
     "period": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["startDate", "endDate"],
+      "required": ["start", "end"],
       "properties": {
-        "startDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "endDate": {
-          "type": "string",
-          "format": "date"
-        }
+        "start": { "type": "string", "format": "date" },
+        "end": { "type": "string", "format": "date" }
       }
     },
     "safTFile": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["path", "sha256"],
+      "required": ["path", "sha256", "version"],
       "properties": {
-        "path": {
-          "type": "string",
-          "pattern": "^saf-t/"
-        },
-        "sha256": {
-          "$ref": "#/$defs/sha256"
-        },
-        "safTVersion": {
-          "type": "string"
-        },
-        "selection": {
-          "type": "string"
-        }
+        "path": { "type": "string", "pattern": "^saf-t/[^/]+\\.xml$" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "version": { "type": "string", "minLength": 1 }
       }
     },
-    "packageFile": {
+    "objects": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "path", "sha256", "mediaType", "documentType"],
+      "required": ["customers", "suppliers", "employees"],
       "properties": {
-        "id": {
-          "$ref": "#/$defs/fileId"
-        },
-        "path": {
-          "type": "string",
-          "pattern": "^files/"
-        },
-        "sha256": {
-          "$ref": "#/$defs/sha256"
-        },
-        "mediaType": {
-          "type": "string"
-        },
-        "documentType": {
-          "$ref": "#/$defs/documentType"
-        },
-        "title": {
-          "type": "string"
-        },
-        "safTReferences": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/safTReference"
-          },
-          "default": []
-        },
-        "systemReferences": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/systemReference"
-          },
-          "default": []
-        }
+        "customers": { "$ref": "#/$defs/objectFile" },
+        "suppliers": { "$ref": "#/$defs/objectFile" },
+        "employees": { "$ref": "#/$defs/objectFile" }
       }
     },
     "objectFile": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["path", "sha256", "objectType", "format"],
-      "properties": {
-        "path": {
-          "type": "string",
-          "pattern": "^objects/"
-        },
-        "sha256": {
-          "$ref": "#/$defs/sha256"
-        },
-        "objectType": {
-          "type": "string"
-        },
-        "format": {
-          "enum": ["jsonl", "json", "csv"]
-        }
-      }
+      "required": ["sha256"],
+      "properties": { "sha256": { "$ref": "#/$defs/sha256" } }
     },
-    "safTReference": {
+    "document": {
       "type": "object",
       "additionalProperties": false,
+      "required": ["path", "sha256", "mediaType", "type", "sourceIds", "transactions"],
       "properties": {
-        "journalId": {
-          "type": "string"
-        },
-        "transactionId": {
-          "type": "string"
-        },
-        "recordId": {
-          "type": "string"
-        },
-        "sourceDocumentId": {
-          "type": "string"
-        },
-        "voucherNumber": {
-          "type": "string"
-        },
-        "customerId": {
-          "type": "string"
-        },
-        "supplierId": {
-          "type": "string"
-        },
-        "ownerId": {
-          "type": "string"
-        },
-        "analysisType": {
-          "type": "string"
-        },
-        "analysisId": {
-          "type": "string"
-        }
+        "path": { "type": "string", "pattern": "^documents/" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "mediaType": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["invoice", "credit-note", "receipt", "attachment", "bank-document", "payroll-document"] },
+        "sourceIds": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "transactions": { "type": "array", "items": { "$ref": "#/$defs/transactionReference" }, "uniqueItems": true }
       }
     },
-    "systemReference": {
+    "transactionReference": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "value"],
+      "required": ["safTFile", "journalId", "transactionId", "recordIds"],
       "properties": {
-        "type": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        }
+        "safTFile": { "type": "string", "pattern": "^saf-t/[^/]+\\.xml$" },
+        "journalId": { "type": "string", "minLength": 1 },
+        "transactionId": { "type": "string", "minLength": 1 },
+        "recordIds": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
       }
     },
-    "completenessStatement": {
+    "missingDocument": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["scope", "status"],
+      "required": ["sourceId", "reason"],
       "properties": {
-        "scope": {
-          "enum": [
-            "saf-t-xml",
-            "posting-related-documents",
-            "non-posting-documents",
-            "master-data",
-            "sidecar-objects"
-          ]
-        },
-        "status": {
-          "enum": ["complete", "partial", "not_available", "not_applicable"]
-        },
-        "note": {
-          "type": "string"
-        }
+        "sourceId": { "type": "string", "minLength": 1 },
+        "reason": { "enum": ["not-found", "not-exportable"] }
       }
     },
-    "knownOmission": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["scope", "reason"],
-      "properties": {
-        "scope": {
-          "enum": [
-            "saf-t-xml",
-            "posting-related-documents",
-            "non-posting-documents",
-            "master-data",
-            "sidecar-objects"
-          ]
-        },
-        "reason": {
-          "enum": [
-            "not_available_in_source_system",
-            "not_exported_by_source_system",
-            "outside_selected_period",
-            "outside_selected_scope",
-            "privacy_or_legal_exclusion",
-            "unknown"
-          ]
-        },
-        "reference": {
-          "type": "string"
-        },
-        "note": {
-          "type": "string"
-        }
-      }
-    },
-    "fileId": {
-      "type": "string",
-      "pattern": "^[A-Za-z0-9._:-]+$"
-    },
-    "sha256": {
-      "type": "string",
-      "pattern": "^[a-f0-9]{64}$"
-    },
-    "documentType": {
-      "enum": [
-        "invoice",
-        "credit-note",
-        "invoice-rendering",
-        "invoice-attachment",
-        "receipt",
-        "voucher-attachment",
-        "bank-statement",
-        "payment-documentation",
-        "customer-contract",
-        "supplier-contract",
-        "engagement-letter",
-        "kyc-document",
-        "correspondence",
-        "board-document",
-        "system-report",
-        "import-log",
-        "export-log",
-        "employee-document",
-        "project-document",
-        "department-document"
-      ]
-    }
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
   }
 }

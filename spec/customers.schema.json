@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/beint-no/saf-t-extended/blob/main/spec/customers.schema.json",
+  "$id": "https://raw.githubusercontent.com/beint-no/saf-t-extended/main/spec/customers.schema.json",
   "title": "SAF-T Extended customer record",
   "$ref": "#/$defs/party",
   "$defs": {
@@ -18,7 +18,7 @@
         "email": { "type": ["string", "null"] },
         "phone": { "type": ["string", "null"] },
         "invoiceEmail": { "type": ["string", "null"] },
-        "currency": { "type": ["string", "null"] },
+        "currency": { "type": ["string", "null"], "pattern": "^[A-Z]{3}$" },
         "paymentTermsDays": { "type": ["integer", "null"], "minimum": 0 },
         "bankAccount": { "type": ["string", "null"] },
         "iban": { "type": ["string", "null"] },

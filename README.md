@@ -6,19 +6,20 @@ It combines four things:
 
 1. official SAF-T Financial XML for the ledger
 2. original accounting documents
-3. small JSONL master-data files for customers, suppliers, employees,
-   departments and projects
+3. small JSONL files for customers, suppliers, employees, departments,
+   projects, products and sales orders
 4. one manifest containing checksums, document-to-transaction links and any
    source documents the exporting system could not return
 
-Version 0.3 permits only the files and object types defined by the normative
-specification. A package containing unlisted content is invalid.
+Version 0.4 defines exactly those seven portable object schemas. Exporters may
+also include integrity-listed files under `extras/`; those files have no
+standardized meaning and conforming importers may ignore them.
 
 ## Why this exists
 
 SAF-T is the right interchange format for accounts, tax codes, dimensions and
 ledger transactions. It is less suitable as a simple application import format
-for customer, supplier and employee records, and it does not carry the source
+for operational master data and sales orders, and it does not carry the source
 files behind the postings.
 
 SAF-T Extended fills only those two gaps. It does not replace or modify SAF-T.
@@ -34,7 +35,10 @@ objects/
   employees.jsonl    # when non-empty
   departments.jsonl  # when non-empty
   projects.jsonl     # when non-empty
+  products.jsonl     # when non-empty
+  orders.jsonl       # when non-empty
 documents/
+extras/              # optional, non-standard supplementary files
 ```
 
 Each JSONL file is written and listed only when it has at least one record. Every
@@ -65,7 +69,7 @@ and media optimization do not change the logical format.
 
 ## Implementer
 
-[ReAI](https://reai.no) is the only listed implementer of version 0.3. See
+[ReAI](https://reai.no) is the only listed implementer of version 0.4. See
 [IMPLEMENTERS.md](IMPLEMENTERS.md).
 
 ## Design principles

@@ -1,7 +1,7 @@
 # Roadmap
 
-Version 0.3 defines customer, supplier, employee, department and project master
-data.
+Version 0.4 defines customers, suppliers, employees, departments, projects,
+products and sales orders.
 
 Candidates are ranked by the accounting state an importer would otherwise lose:
 
@@ -13,13 +13,9 @@ Candidates are ranked by the accounting state an importer would otherwise lose:
    cutover so an importer can continue matching without re-importing or losing
    the source bank-line identity. Standardize only after proving a minimal model
    across at least two source systems.
-3. **Products.** Useful for operational continuity, but not needed to
-   reconstruct the books. Pricing, units, discounts, inventory and VAT
-   defaults make a portable minimal schema less obvious, so keep this outside
-   the core until an importer uses it.
-4. **Contacts.** Potentially useful for customer and supplier communication, but
+3. **Contacts.** Potentially useful for customer and supplier communication, but
    secondary to accounting reconstruction and often duplicated by CRM data.
-5. **Payroll operational state.** Employment, leave and year-to-date payroll can
+4. **Payroll operational state.** Employment, leave and year-to-date payroll can
    matter for a payroll-system cutover, but it is sensitive, jurisdiction-specific
    and broader than an accounting archive. It should be a separate profile if
    implemented.

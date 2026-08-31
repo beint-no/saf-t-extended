@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a SAF-T Extended 0.3 package without third-party dependencies."""
+"""Validate a SAF-T Extended 0.4 package without third-party dependencies."""
 
 import argparse
 import hashlib
@@ -14,7 +14,7 @@ from xml.etree import ElementTree
 SHA256 = re.compile(r"^[a-f0-9]{64}$")
 ROOT_FIELDS = {
     "format", "version", "createdAt", "exporter", "sourceSystem", "company",
-    "period", "safT", "objects", "documents", "missingDocuments",
+    "period", "safT", "objects", "documents", "extras", "missingDocuments",
 }
 PARTY_FIELDS = {
     "id", "number", "name", "type", "organizationNumber", "vatNumber",
@@ -29,6 +29,21 @@ DEPARTMENT_FIELDS = {"id", "number", "name", "active"}
 PROJECT_FIELDS = {
     "id", "number", "name", "customerId", "departmentId",
     "managerEmployeeId", "parentProjectId", "startDate", "endDate", "active",
+}
+PRODUCT_FIELDS = {
+    "id", "number", "name", "description", "unitCode", "currency",
+    "salesPriceExcludingTax", "purchasePriceExcludingTax", "barcode",
+    "stockItem", "active",
+}
+ORDER_FIELDS = {
+    "id", "number", "customerId", "projectId", "departmentId", "orderDate",
+    "deliveryDate", "currency", "status", "reference", "note",
+    "paymentTermsDays", "deliveryAddress", "lines",
+}
+ORDER_LINE_FIELDS = {
+    "id", "sequence", "productId", "description", "quantity", "unitCode",
+    "unitPriceExcludingTax", "discountPercent", "amountExcludingTax",
+    "taxAmount", "amountIncludingTax",
 }
 ADDRESS_FIELDS = {"line1", "line2", "postalCode", "city", "region", "countryCode"}
 DOCUMENT_TYPES = {
@@ -93,6 +108,12 @@ def nullable_string(value):
     return value is None or isinstance(value, str)
 
 
+def nullable_number(value):
+    return value is None or (
+        isinstance(value, (int, float)) and not isinstance(value, bool)
+    )
+
+
 def validate_address(value, location, errors):
     if value is None:
         return
@@ -118,6 +139,8 @@ def validate_party(row, location, errors):
             errors.append(f"{location}.{field}: must be a string or null")
     if row["type"] not in {"company", "person", "unknown"}:
         errors.append(f"{location}.type: invalid value")
+    if row["currency"] is not None and not re.fullmatch(r"[A-Z]{3}", row["currency"]):
+        errors.append(f"{location}.currency: must be an ISO 4217 code or null")
     days = row["paymentTermsDays"]
     if days is not None and (not isinstance(days, int) or isinstance(days, bool) or days < 0):
         errors.append(f"{location}.paymentTermsDays: must be a non-negative integer or null")
@@ -181,6 +204,102 @@ def validate_project(row, location, errors):
         errors.append(f"{location}.parentProjectId: project cannot be its own parent")
     if not isinstance(row["active"], bool):
         errors.append(f"{location}.active: must be a boolean")
+
+
+def validate_product(row, location, errors):
+    if not exact_fields(row, PRODUCT_FIELDS, location, errors):
+        return
+    if not isinstance(row["id"], str) or not row["id"]:
+        errors.append(f"{location}.id: must be a non-empty string")
+    if not isinstance(row["name"], str) or not row["name"]:
+        errors.append(f"{location}.name: must be a non-empty string")
+    for field in {"number", "description", "unitCode", "currency", "barcode"}:
+        if not nullable_string(row[field]):
+            errors.append(f"{location}.{field}: must be a string or null")
+    if row["currency"] is not None and not re.fullmatch(r"[A-Z]{3}", row["currency"]):
+        errors.append(f"{location}.currency: must be an ISO 4217 code or null")
+    for field in {"salesPriceExcludingTax", "purchasePriceExcludingTax"}:
+        if not nullable_number(row[field]):
+            errors.append(f"{location}.{field}: must be a number or null")
+    for field in {"stockItem", "active"}:
+        if not isinstance(row[field], bool):
+            errors.append(f"{location}.{field}: must be a boolean")
+
+
+def validate_order(row, location, errors):
+    if not exact_fields(row, ORDER_FIELDS, location, errors):
+        return
+    for field in {"id", "number"}:
+        if not isinstance(row[field], str) or not row[field]:
+            errors.append(f"{location}.{field}: must be a non-empty string")
+    for field in {"customerId", "projectId", "departmentId", "reference", "note"}:
+        if not nullable_string(row[field]):
+            errors.append(f"{location}.{field}: must be a string or null")
+    for field in {"orderDate", "deliveryDate"}:
+        if row[field] is not None:
+            try:
+                date.fromisoformat(row[field])
+            except (TypeError, ValueError):
+                errors.append(f"{location}.{field}: invalid ISO date")
+    if not nullable_string(row["currency"]) or (
+        row["currency"] is not None
+        and not re.fullmatch(r"[A-Z]{3}", row["currency"])
+    ):
+        errors.append(f"{location}.currency: must be an ISO 4217 code or null")
+    if row["status"] not in {"open", "closed", "cancelled", "unknown"}:
+        errors.append(f"{location}.status: invalid value")
+    days = row["paymentTermsDays"]
+    if days is not None and (
+        not isinstance(days, int) or isinstance(days, bool) or days < 0
+    ):
+        errors.append(
+            f"{location}.paymentTermsDays: must be a non-negative integer or null"
+        )
+    validate_address(row["deliveryAddress"], f"{location}.deliveryAddress", errors)
+    if not isinstance(row["lines"], list):
+        errors.append(f"{location}.lines: must be an array")
+        return
+    line_ids = []
+    sequences = []
+    for index, line in enumerate(row["lines"], 1):
+        line_location = f"{location}.lines[{index}]"
+        if not exact_fields(line, ORDER_LINE_FIELDS, line_location, errors):
+            continue
+        if not isinstance(line["id"], str) or not line["id"]:
+            errors.append(f"{line_location}.id: must be a non-empty string")
+        else:
+            line_ids.append(line["id"])
+        if (
+            not isinstance(line["sequence"], int)
+            or isinstance(line["sequence"], bool)
+            or line["sequence"] < 0
+        ):
+            errors.append(f"{line_location}.sequence: must be a non-negative integer")
+        else:
+            sequences.append(line["sequence"])
+        if not nullable_string(line["productId"]):
+            errors.append(f"{line_location}.productId: must be a string or null")
+        if not isinstance(line["description"], str) or not line["description"]:
+            errors.append(f"{line_location}.description: must be a non-empty string")
+        if not nullable_string(line["unitCode"]):
+            errors.append(f"{line_location}.unitCode: must be a string or null")
+        for field in {
+            "quantity", "unitPriceExcludingTax", "discountPercent",
+            "amountExcludingTax", "taxAmount", "amountIncludingTax",
+        }:
+            if not nullable_number(line[field]) or (
+                field == "quantity" and line[field] is None
+            ):
+                errors.append(f"{line_location}.{field}: must be a number"
+                              if field == "quantity"
+                              else f"{line_location}.{field}: must be a number or null")
+        discount = line["discountPercent"]
+        if discount is not None and not 0 <= discount <= 100:
+            errors.append(f"{line_location}.discountPercent: must be between 0 and 100")
+    if len(line_ids) != len(set(line_ids)):
+        errors.append(f"{location}.lines: duplicate id")
+    if sequences != sorted(sequences):
+        errors.append(f"{location}.lines: must be ordered by sequence")
 
 
 def validate_jsonl(path, validator, errors):
@@ -260,8 +379,8 @@ def validate_package(root):
         return [f"invalid or missing manifest.json: {exc}"]
     if not exact_fields(manifest, ROOT_FIELDS, "manifest", errors):
         return errors
-    if manifest["format"] != "saf-t-extended" or manifest["version"] != "0.3":
-        errors.append("manifest: expected SAF-T Extended version 0.3")
+    if manifest["format"] != "saf-t-extended" or manifest["version"] != "0.4":
+        errors.append("manifest: expected SAF-T Extended version 0.4")
     try:
         datetime.fromisoformat(str(manifest["createdAt"]).replace("Z", "+00:00"))
     except ValueError:
@@ -293,7 +412,10 @@ def validate_package(root):
                 saf_t_indexes[item["path"]] = saf_t_index(path, errors)
 
     objects = manifest["objects"]
-    object_names = {"customers", "suppliers", "employees", "departments", "projects"}
+    object_names = {
+        "customers", "suppliers", "employees", "departments", "projects",
+        "products", "orders",
+    }
     if not isinstance(objects, dict):
         errors.append("manifest.objects: must be an object")
     else:
@@ -308,6 +430,8 @@ def validate_package(root):
             "employees": validate_employee,
             "departments": validate_department,
             "projects": validate_project,
+            "products": validate_product,
+            "orders": validate_order,
         }
         object_rows = {}
         for name in sorted(set(objects) & object_names):
@@ -335,6 +459,28 @@ def validate_package(root):
                 if value is not None and value not in object_ids.get(target, set()):
                     errors.append(
                         f"projects.jsonl:{index}.{field}: unknown {target} id {value!r}"
+                    )
+        order_references = {
+            "customerId": "customers",
+            "projectId": "projects",
+            "departmentId": "departments",
+        }
+        for index, order in enumerate(object_rows.get("orders", []), 1):
+            for field, target in order_references.items():
+                value = order.get(field)
+                if value is not None and value not in object_ids.get(target, set()):
+                    errors.append(
+                        f"orders.jsonl:{index}.{field}: unknown {target} id {value!r}"
+                    )
+            for line_index, line in enumerate(order.get("lines", []), 1):
+                product_id = line.get("productId") if isinstance(line, dict) else None
+                if (
+                    product_id is not None
+                    and product_id not in object_ids.get("products", set())
+                ):
+                    errors.append(
+                        f"orders.jsonl:{index}.lines[{line_index}].productId: "
+                        f"unknown products id {product_id!r}"
                     )
 
     documents = manifest["documents"]
@@ -381,6 +527,18 @@ def validate_package(root):
                     errors.append(f"{ref_location}: transaction does not exist in SAF-T")
                 elif not set(reference["recordIds"]) <= set(matching[0]):
                     errors.append(f"{ref_location}: RecordID does not exist in transaction")
+
+    extras = manifest["extras"]
+    if not isinstance(extras, list):
+        errors.append("manifest.extras: must be an array")
+    else:
+        for index, item in enumerate(extras):
+            location = f"manifest.extras[{index}]"
+            if not exact_fields(item, {"path", "sha256", "mediaType"}, location, errors):
+                continue
+            checked_file(root, item, "extras/", location, listed, errors)
+            if not isinstance(item["mediaType"], str) or not item["mediaType"]:
+                errors.append(f"{location}.mediaType: must be a non-empty string")
 
     missing_documents = manifest["missingDocuments"]
     if not isinstance(missing_documents, list):

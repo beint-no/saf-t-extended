@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/beint-no/saf-t-extended/main/spec/orders.schema.json",
+  "title": "SAF-T Extended sales order record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "number", "customerId", "projectId", "departmentId", "orderDate", "deliveryDate", "currency", "status", "reference", "note", "paymentTermsDays", "deliveryAddress", "lines"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "number": { "type": "string", "minLength": 1 },
+    "customerId": { "type": ["string", "null"] },
+    "projectId": { "type": ["string", "null"] },
+    "departmentId": { "type": ["string", "null"] },
+    "orderDate": { "type": ["string", "null"], "format": "date" },
+    "deliveryDate": { "type": ["string", "null"], "format": "date" },
+    "currency": { "type": ["string", "null"], "pattern": "^[A-Z]{3}$" },
+    "status": { "enum": ["open", "closed", "cancelled", "unknown"] },
+    "reference": { "type": ["string", "null"] },
+    "note": { "type": ["string", "null"] },
+    "paymentTermsDays": { "type": ["integer", "null"], "minimum": 0 },
+    "deliveryAddress": { "$ref": "#/$defs/nullableAddress" },
+    "lines": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/line" }
+    }
+  },
+  "$defs": {
+    "nullableAddress": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/address" }] },
+    "address": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["line1", "line2", "postalCode", "city", "region", "countryCode"],
+      "properties": {
+        "line1": { "type": ["string", "null"] },
+        "line2": { "type": ["string", "null"] },
+        "postalCode": { "type": ["string", "null"] },
+        "city": { "type": ["string", "null"] },
+        "region": { "type": ["string", "null"] },
+        "countryCode": { "type": ["string", "null"], "pattern": "^[A-Z]{2}$" }
+      }
+    },
+    "line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sequence", "productId", "description", "quantity", "unitCode", "unitPriceExcludingTax", "discountPercent", "amountExcludingTax", "taxAmount", "amountIncludingTax"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "sequence": { "type": "integer", "minimum": 0 },
+        "productId": { "type": ["string", "null"] },
+        "description": { "type": "string", "minLength": 1 },
+        "quantity": { "type": "number" },
+        "unitCode": { "type": ["string", "null"] },
+        "unitPriceExcludingTax": { "type": ["number", "null"] },
+        "discountPercent": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+        "amountExcludingTax": { "type": ["number", "null"] },
+        "taxAmount": { "type": ["number", "null"] },
+        "amountIncludingTax": { "type": ["number", "null"] }
+      }
+    }
+  }
+}

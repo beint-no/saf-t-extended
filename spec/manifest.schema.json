@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/beint-no/saf-t-extended/blob/main/spec/manifest.schema.json",
-  "title": "SAF-T Extended 0.3 manifest",
+  "$id": "https://raw.githubusercontent.com/beint-no/saf-t-extended/main/spec/manifest.schema.json",
+  "title": "SAF-T Extended 0.4 manifest",
   "type": "object",
   "additionalProperties": false,
-  "required": ["format", "version", "createdAt", "exporter", "sourceSystem", "company", "period", "safT", "objects", "documents", "missingDocuments"],
+  "required": ["format", "version", "createdAt", "exporter", "sourceSystem", "company", "period", "safT", "objects", "documents", "extras", "missingDocuments"],
   "properties": {
     "format": { "const": "saf-t-extended" },
-    "version": { "const": "0.3" },
+    "version": { "const": "0.4" },
     "createdAt": { "type": "string", "format": "date-time" },
     "exporter": { "$ref": "#/$defs/exporter" },
     "sourceSystem": { "$ref": "#/$defs/sourceSystem" },
@@ -16,6 +16,7 @@
     "safT": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/safTFile" } },
     "objects": { "$ref": "#/$defs/objects" },
     "documents": { "type": "array", "items": { "$ref": "#/$defs/document" } },
+    "extras": { "type": "array", "items": { "$ref": "#/$defs/extra" } },
     "missingDocuments": { "type": "array", "items": { "$ref": "#/$defs/missingDocument" } }
   },
   "$defs": {
@@ -74,7 +75,9 @@
         "suppliers": { "$ref": "#/$defs/objectFile" },
         "employees": { "$ref": "#/$defs/objectFile" },
         "departments": { "$ref": "#/$defs/objectFile" },
-        "projects": { "$ref": "#/$defs/objectFile" }
+        "projects": { "$ref": "#/$defs/objectFile" },
+        "products": { "$ref": "#/$defs/objectFile" },
+        "orders": { "$ref": "#/$defs/objectFile" }
       }
     },
     "objectFile": {
@@ -94,6 +97,16 @@
         "type": { "enum": ["invoice", "credit-note", "receipt", "attachment", "bank-document", "payroll-document"] },
         "sourceIds": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
         "transactions": { "type": "array", "items": { "$ref": "#/$defs/transactionReference" }, "uniqueItems": true }
+      }
+    },
+    "extra": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "mediaType"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^extras/" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "mediaType": { "type": "string", "minLength": 1 }
       }
     },
     "transactionReference": {

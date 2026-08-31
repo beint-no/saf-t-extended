@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/beint-no/saf-t-extended/main/spec/products.schema.json",
+  "title": "SAF-T Extended product record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "number", "name", "description", "unitCode", "currency", "salesPriceExcludingTax", "purchasePriceExcludingTax", "barcode", "stockItem", "active"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "number": { "type": ["string", "null"] },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": ["string", "null"] },
+    "unitCode": { "type": ["string", "null"] },
+    "currency": { "type": ["string", "null"], "pattern": "^[A-Z]{3}$" },
+    "salesPriceExcludingTax": { "type": ["number", "null"] },
+    "purchasePriceExcludingTax": { "type": ["number", "null"] },
+    "barcode": { "type": ["string", "null"] },
+    "stockItem": { "type": "boolean" },
+    "active": { "type": "boolean" }
+  }
+}

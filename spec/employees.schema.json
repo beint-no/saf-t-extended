@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/beint-no/saf-t-extended/blob/main/spec/employees.schema.json",
+  "$id": "https://raw.githubusercontent.com/beint-no/saf-t-extended/main/spec/employees.schema.json",
   "title": "SAF-T Extended employee record",
   "type": "object",
   "additionalProperties": false,

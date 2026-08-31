@@ -1,6 +1,6 @@
 {
   "format": "saf-t-extended",
-  "version": "0.3",
+  "version": "0.4",
   "createdAt": "2026-07-09T00:00:00Z",
   "exporter": {
     "name": "ReAI",
@@ -41,6 +41,12 @@
     },
     "projects": {
       "sha256": "6faa9f68b82c150b55e18032e8e99331a89d215aedb4fb1be16e49a7af6a9ce1"
+    },
+    "products": {
+      "sha256": "4a6ffc391a76e7232b288b1a920249525c07df4c377b561a9612ea51da3ebe09"
+    },
+    "orders": {
+      "sha256": "35f4af35d5507050a7d8136776adf209d33f7405ac18168ba9cb6c097b209285"
     }
   },
   "documents": [
@@ -64,5 +70,6 @@
       ]
     }
   ],
+  "extras": [],
   "missingDocuments": []
 }

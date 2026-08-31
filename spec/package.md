@@ -1,4 +1,4 @@
-# SAF-T Extended 0.3
+# SAF-T Extended 0.4
 
 This document is normative.
 
@@ -8,9 +8,10 @@ SAF-T Extended is a portable accounting archive and interchange package, not a
 tax submission format. Official SAF-T Financial XML remains unchanged and is
 the source of truth for accounts, tax codes, dimensions and ledger transactions.
 
-Version 0.3 consists of:
+Version 0.4 consists of:
 
-- a predictable customer, supplier, employee, department and project object layer
+- predictable customer, supplier, employee, department, project, product and
+  sales-order objects
 - original accounting documents
 - document-to-SAF-T transaction links
 - integrity checksums
@@ -27,15 +28,19 @@ objects/suppliers.jsonl    # when non-empty
 objects/employees.jsonl    # when non-empty
 objects/departments.jsonl  # when non-empty
 objects/projects.jsonl     # when non-empty
+objects/products.jsonl     # when non-empty
+objects/orders.jsonl       # when non-empty
 documents/<source documents, optionally grouped by year>
+extras/<integrity-listed, non-standard files>
 ```
 
 `manifest.json` and at least one SAF-T XML file are required. Each shown JSONL
 file is present only when it contains at least one record; `objects/` may be
 absent when there are no object records. `documents/` may be absent when there
-are no documents.
+are no documents. `extras/` may be absent when the always-present `extras`
+manifest array is empty.
 
-No other files or directories are part of version 0.3. A package containing
+No other files or directories are part of version 0.4. A package containing
 unlisted files is invalid.
 
 ## 3. Manifest
@@ -47,6 +52,7 @@ The manifest follows [manifest.schema.json](manifest.schema.json). It contains:
 - every SAF-T file and its SHA-256 checksum
 - checksums for each present JSONL file
 - every document, its media type, checksum, source identifiers and SAF-T links
+- every non-standard supplementary file and its media type and checksum
 - a `missingDocuments` array naming source documents that the source system
   reported but could not return
 
@@ -104,7 +110,7 @@ files are invalid. Exporters must identify the content or fail. HTML fragments
 or diagnostic responses produced by an accounting-system endpoint are not
 accounting documents and are ignored.
 
-The document types in version 0.3 are intentionally small:
+The document types in version 0.4 are intentionally small:
 
 | Type | Meaning |
 | --- | --- |
@@ -129,6 +135,10 @@ The supported files are:
   [departments.schema.json](departments.schema.json)
 - `objects/projects.jsonl`, validated by
   [projects.schema.json](projects.schema.json)
+- `objects/products.jsonl`, validated by
+  [products.schema.json](products.schema.json)
+- `objects/orders.jsonl`, validated by
+  [orders.schema.json](orders.schema.json)
 
 An exporter emits a file if and only if it has records. Empty JSONL files are
 invalid because absence expresses the same fact with less ambiguity and fewer
@@ -143,12 +153,22 @@ Every schema field is present on every record. Use `null` for an unknown scalar
 or object value. Do not omit keys, add vendor fields, or serialize empty values
 as ambiguous empty strings.
 
+Exporters include inactive or closed records when the source system can return
+them and set `active` accordingly. Every non-null object reference must resolve
+to a record in the corresponding JSONL file; an exporter must not drop a
+historical customer, product, department or project merely because it is no
+longer active.
+
 Customer and supplier `id` values must equal the corresponding SAF-T
 `CustomerID` or `SupplierID` whenever that party is represented in SAF-T.
 Employee `id` must equal the SAF-T analysis ID when the employee is used as an
 analysis dimension. Department and project `id` values follow the same rule.
 Non-null project references use IDs from the corresponding customer,
 department, employee or project object file.
+
+Non-null order references use IDs from the corresponding customer, project,
+department or product object file. Order lines are embedded because their
+meaning, sequence, quantities and amounts are inseparable from the order.
 
 The object files duplicate IDs and names from SAF-T only where needed to join
 records and detect conflicts. They define application master data SAF-T does
@@ -173,7 +193,17 @@ SQLite and columnar formats are binary containers with a larger implementation
 surface. A single JSON array requires reading and rewriting the whole file.
 JSONL is the smallest practical common denominator for archival imports.
 
-## 6. Packaging
+## 6. Extras
+
+`extras` is an always-present manifest array. Each entry has exactly `path`,
+`sha256` and `mediaType`, and every path begins with `extras/`. The standard does
+not define the semantics or schema of these files. Exporters use this area for
+source-system data or convenient renderings that are useful to a specific
+importer but are not universal enough to become standard objects. Conforming
+importers may ignore every extra. An extra must never replace required SAF-T,
+object or source-document content.
+
+## 7. Packaging
 
 The transport form is a POSIX-compatible tar archive compressed with Zstandard
 and named `*.tar.zst`. Paths must be relative, must not contain `..`, and must

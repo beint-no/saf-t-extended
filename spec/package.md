@@ -127,7 +127,8 @@ The document types in version 0.4 are intentionally small:
 Exporters should group documents by their business role so a person can browse
 the archive without first reading the manifest. A useful layout is
 `documents/supplier-invoices/`, `documents/customer-invoices/`,
-`documents/salary/`, `documents/inbox/` for received documents not yet posted,
+`documents/salary/`, `documents/expenses/` for employee expense evidence,
+`documents/inbox/` for received documents not yet posted,
 and `documents/<voucher-type>-vouchers/` for other posted evidence, such as
 `documents/manual-vouchers/`. Additional groups and year subdirectories are
 allowed. The manifest remains authoritative: folder names do not establish

@@ -30,7 +30,7 @@ objects/departments.jsonl  # when non-empty
 objects/projects.jsonl     # when non-empty
 objects/products.jsonl     # when non-empty
 objects/orders.jsonl       # when non-empty
-documents/<source documents, optionally grouped by year>
+documents/<source documents, optionally grouped by document role and voucher type>
 extras/<integrity-listed, non-standard files>
 ```
 
@@ -121,6 +121,18 @@ The document types in version 0.4 are intentionally small:
 | `bank-document` | Bank statement, payment file or payment confirmation. |
 | `payroll-document` | Payslip or other payroll accounting evidence. |
 
+### Document folders
+
+Exporters should group documents by their business role so a person can browse
+the archive without first reading the manifest. A useful layout is
+`documents/supplier-invoices/`, `documents/customer-invoices/`,
+`documents/salary/`, `documents/inbox/` for received documents not yet posted,
+and `documents/vouchers/<voucher-type>/` for other posted evidence. Additional
+groups and year subdirectories are allowed. The manifest remains authoritative:
+folder names do not establish document type, posting status or a transaction
+link. A file with several roles is stored once and can carry all source IDs and
+transaction links in its manifest entry.
+
 ## 5. Objects
 
 The supported files are:
@@ -202,6 +214,14 @@ source-system data or convenient renderings that are useful to a specific
 importer but are not universal enough to become standard objects. Conforming
 importers may ignore every extra. An extra must never replace required SAF-T,
 object or source-document content.
+
+Exporters may include auditor-friendly CSV views such as an annual trial balance
+or holiday allowance list under `extras/reports/`. These are supplementary
+snapshots with explicit dates and column headers; the ledger in SAF-T remains
+authoritative. A holiday allowance list may summarize payroll details outside
+SAF-T, so exporters should include the available payroll source documents as
+well. Report files must be listed with checksums in `extras` like every other
+supplementary file.
 
 ## 7. Packaging
 

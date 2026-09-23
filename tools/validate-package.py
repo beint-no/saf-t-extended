@@ -79,7 +79,8 @@ def package_path(root, value, prefix, location, errors):
         errors.append(f"{location}: missing path")
         return None
     pure = PurePosixPath(value)
-    if pure.is_absolute() or ".." in pure.parts or not value.startswith(prefix):
+    prefixes = (prefix,) if isinstance(prefix, str) else prefix
+    if pure.is_absolute() or ".." in pure.parts or not any(value.startswith(item) for item in prefixes):
         errors.append(f"{location}: unsafe or misplaced path {value!r}")
         return None
     path = root.joinpath(*pure.parts)
@@ -405,10 +406,10 @@ def validate_package(root):
             location = f"manifest.safT[{index}]"
             if not exact_fields(item, {"path", "sha256", "version"}, location, errors):
                 continue
-            path = checked_file(root, item, "saf-t/", location, listed, errors)
-            if path is not None and len(PurePosixPath(item["path"]).parts) != 2:
-                errors.append(f"{location}: SAF-T files must be directly under saf-t/")
-            if path is not None:
+            path = checked_file(root, item, "", location, listed, errors)
+            if path is not None and (len(PurePosixPath(item["path"]).parts) != 1 or path.suffix != ".xml"):
+                errors.append(f"{location}: SAF-T XML files must be at the package root")
+            elif path is not None:
                 saf_t_indexes[item["path"]] = saf_t_index(path, errors)
 
     objects = manifest["objects"]
@@ -536,7 +537,7 @@ def validate_package(root):
             location = f"manifest.extras[{index}]"
             if not exact_fields(item, {"path", "sha256", "mediaType"}, location, errors):
                 continue
-            checked_file(root, item, "extras/", location, listed, errors)
+            checked_file(root, item, ("reports/", "extras/"), location, listed, errors)
             if not isinstance(item["mediaType"], str) or not item["mediaType"]:
                 errors.append(f"{location}.mediaType: must be a non-empty string")
 

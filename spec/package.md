@@ -225,10 +225,10 @@ supplementary file.
 
 ## 7. Packaging
 
-The transport form is a POSIX-compatible tar archive compressed with Zstandard
-and named `*.tar.zst`. Paths must be relative, must not contain `..`, and must
-not be symbolic links. The extracted package must validate identically to the
-archive contents.
+The delivery container is outside this specification. Package paths must be
+relative, must not contain `..`, and must not be symbolic links. Extracting an
+archive must yield the same package contents and validation result as the
+unarchived directory.
 
 Media may be optimized before checksums are calculated. Signed, encrypted or
 otherwise integrity-protected files must remain byte-identical.

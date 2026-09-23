@@ -57,15 +57,10 @@ python3 tools/validate-package.py examples/minimal-package
 
 ## Distribution
 
-A package is distributed as a Zstandard-compressed tar archive named
-`*.tar.zst`. Extract it with:
-
-```sh
-zstd -dc export.tar.zst | tar -xf -
-```
-
-The uncompressed directory and the archive contain the same package. Compression
-and media optimization do not change the logical format.
+A package may be delivered as a directory or an archive. Its delivery container
+is outside this specification; the extracted files must follow the same package
+layout and validate identically. Media optimization does not change the logical
+format.
 
 ## Implementer
 

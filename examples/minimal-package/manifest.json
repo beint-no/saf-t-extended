@@ -21,7 +21,7 @@
   },
   "safT": [
     {
-      "path": "saf-t/SAF-T Financial_999999999_20261231235959_A_1_1.xml",
+      "path": "SAF-T Financial_999999999_20261231235959_A_1_1.xml",
       "sha256": "fd73d7ee64295da952b361ff16d2ebdb88781a03bd4cefdcc02bdb0ff9493fb0",
       "version": "1.40"
     }
@@ -60,7 +60,7 @@
       ],
       "transactions": [
         {
-          "safTFile": "saf-t/SAF-T Financial_999999999_20261231235959_A_1_1.xml",
+          "safTFile": "SAF-T Financial_999999999_20261231235959_A_1_1.xml",
           "journalId": "GL",
           "transactionId": "1001",
           "recordIds": [

@@ -22,7 +22,7 @@ Every package has this layout:
 
 ```text
 manifest.json
-saf-t/<one or more XML files>
+<one or more SAF-T XML files at the package root>
 objects/customers.jsonl    # when non-empty
 objects/suppliers.jsonl    # when non-empty
 objects/employees.jsonl    # when non-empty
@@ -31,14 +31,15 @@ objects/projects.jsonl     # when non-empty
 objects/products.jsonl     # when non-empty
 objects/orders.jsonl       # when non-empty
 documents/<source documents, optionally grouped by document role and voucher type>
-extras/<integrity-listed, non-standard files>
+reports/<optional auditor-friendly CSV views>
+extras/<optional other supplementary files>
 ```
 
 `manifest.json` and at least one SAF-T XML file are required. Each shown JSONL
 file is present only when it contains at least one record; `objects/` may be
 absent when there are no object records. `documents/` may be absent when there
-are no documents. `extras/` may be absent when the always-present `extras`
-manifest array is empty.
+are no documents. `reports/` and `extras/` may be absent when they have no
+files listed in the always-present `extras` manifest array.
 
 No other files or directories are part of version 0.4. A package containing
 unlisted files is invalid.
@@ -127,11 +128,12 @@ Exporters should group documents by their business role so a person can browse
 the archive without first reading the manifest. A useful layout is
 `documents/supplier-invoices/`, `documents/customer-invoices/`,
 `documents/salary/`, `documents/inbox/` for received documents not yet posted,
-and `documents/vouchers/<voucher-type>/` for other posted evidence. Additional
-groups and year subdirectories are allowed. The manifest remains authoritative:
-folder names do not establish document type, posting status or a transaction
-link. A file with several roles is stored once and can carry all source IDs and
-transaction links in its manifest entry.
+and `documents/<voucher-type>-vouchers/` for other posted evidence, such as
+`documents/manual-vouchers/`. Additional groups and year subdirectories are
+allowed. The manifest remains authoritative: folder names do not establish
+document type, posting status or a transaction link. A file with several roles
+is stored once and can carry all source IDs and transaction links in its
+manifest entry.
 
 ## 5. Objects
 
@@ -208,15 +210,15 @@ JSONL is the smallest practical common denominator for archival imports.
 ## 6. Extras
 
 `extras` is an always-present manifest array. Each entry has exactly `path`,
-`sha256` and `mediaType`, and every path begins with `extras/`. The standard does
-not define the semantics or schema of these files. Exporters use this area for
-source-system data or convenient renderings that are useful to a specific
-importer but are not universal enough to become standard objects. Conforming
-importers may ignore every extra. An extra must never replace required SAF-T,
-object or source-document content.
+`sha256` and `mediaType`, and every path begins with `reports/` or `extras/`.
+The standard does not define the semantics or schema of these files. Exporters
+use this area for source-system data or convenient renderings that are useful to
+a specific importer but are not universal enough to become standard objects.
+Conforming importers may ignore every extra. An extra must never replace
+required SAF-T, object or source-document content.
 
 Exporters may include auditor-friendly CSV views such as an annual trial balance
-or holiday allowance list under `extras/reports/`. These are supplementary
+or holiday allowance list under `reports/`. These are supplementary
 snapshots with explicit dates and column headers; the ledger in SAF-T remains
 authoritative. A holiday allowance list may summarize payroll details outside
 SAF-T, so exporters should include the available payroll source documents as

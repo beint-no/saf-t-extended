@@ -12,8 +12,8 @@ It combines four things:
    source documents the exporting system could not return
 
 Version 0.4 defines exactly those seven portable object schemas. Exporters may
-also include integrity-listed files under `extras/`; those files have no
-standardized meaning and conforming importers may ignore them.
+also include integrity-listed supplementary files under `reports/` or `extras/`;
+those files have no standardized meaning and conforming importers may ignore them.
 
 ## Why this exists
 
@@ -28,7 +28,7 @@ SAF-T Extended fills only those two gaps. It does not replace or modify SAF-T.
 
 ```text
 manifest.json
-saf-t/
+saf-t-<company>.xml
 objects/
   customers.jsonl    # when non-empty
   suppliers.jsonl    # when non-empty
@@ -38,7 +38,8 @@ objects/
   products.jsonl     # when non-empty
   orders.jsonl       # when non-empty
 documents/
-extras/              # optional, non-standard supplementary files
+reports/             # optional auditor-friendly CSV views
+extras/              # optional other supplementary files
 ```
 
 Each JSONL file is written and listed only when it has at least one record. Every

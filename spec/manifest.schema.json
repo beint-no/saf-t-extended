@@ -62,7 +62,7 @@
       "additionalProperties": false,
       "required": ["path", "sha256", "version"],
       "properties": {
-        "path": { "type": "string", "pattern": "^saf-t/[^/]+\\.xml$" },
+        "path": { "type": "string", "pattern": "^[^/]+\\.xml$" },
         "sha256": { "$ref": "#/$defs/sha256" },
         "version": { "type": "string", "minLength": 1 }
       }
@@ -104,7 +104,7 @@
       "additionalProperties": false,
       "required": ["path", "sha256", "mediaType"],
       "properties": {
-        "path": { "type": "string", "pattern": "^extras/" },
+        "path": { "type": "string", "pattern": "^(reports|extras)/" },
         "sha256": { "$ref": "#/$defs/sha256" },
         "mediaType": { "type": "string", "minLength": 1 }
       }
@@ -114,7 +114,7 @@
       "additionalProperties": false,
       "required": ["safTFile", "journalId", "transactionId", "recordIds"],
       "properties": {
-        "safTFile": { "type": "string", "pattern": "^saf-t/[^/]+\\.xml$" },
+        "safTFile": { "type": "string", "pattern": "^[^/]+\\.xml$" },
         "journalId": { "type": "string", "minLength": 1 },
         "transactionId": { "type": "string", "minLength": 1 },
         "recordIds": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }

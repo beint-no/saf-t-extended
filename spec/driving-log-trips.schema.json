@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/beint-no/saf-t-extended/main/spec/driving-log-trips.schema.json",
+  "title": "SAF-T Extended driving log trip record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "vehicleId", "employeeId", "projectId", "date", "fromLocation", "toLocation", "purpose", "kilometers", "odometerStart", "odometerEnd", "accountingMode", "ratePerKilometer", "mileageAmount", "roadTollAmount", "transaction", "createdAt", "updatedAt", "deletedAt"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "vehicleId": { "type": ["string", "null"] },
+    "employeeId": { "type": ["string", "null"] },
+    "projectId": { "type": ["string", "null"] },
+    "date": { "type": "string", "format": "date" },
+    "fromLocation": { "type": "string", "minLength": 1 },
+    "toLocation": { "type": "string", "minLength": 1 },
+    "purpose": { "type": "string", "minLength": 1 },
+    "kilometers": { "type": "number", "exclusiveMinimum": 0 },
+    "odometerStart": { "type": ["number", "null"], "minimum": 0 },
+    "odometerEnd": { "type": ["number", "null"], "minimum": 0 },
+    "accountingMode": { "enum": ["mileage-allowance", "log-only"] },
+    "ratePerKilometer": { "type": "number", "minimum": 0 },
+    "mileageAmount": { "type": "number", "minimum": 0 },
+    "roadTollAmount": { "type": "number", "minimum": 0 },
+    "transaction": { "oneOf": [ { "$ref": "manifest.schema.json#/$defs/transactionReference" }, { "type": "null" } ] },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "deletedAt": { "type": ["string", "null"], "format": "date-time" }
+  }
+}

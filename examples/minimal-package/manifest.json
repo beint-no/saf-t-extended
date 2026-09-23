@@ -1,6 +1,6 @@
 {
   "format": "saf-t-extended",
-  "version": "0.4",
+  "version": "0.5",
   "createdAt": "2026-07-09T00:00:00Z",
   "exporter": {
     "name": "ReAI",
@@ -47,6 +47,12 @@
     },
     "orders": {
       "sha256": "35f4af35d5507050a7d8136776adf209d33f7405ac18168ba9cb6c097b209285"
+    },
+    "driving-log-vehicles": {
+      "sha256": "c216ecd4372640adb4388fe7f0fa7a4b17f847162af17f87578b234479f343ec"
+    },
+    "driving-log-trips": {
+      "sha256": "57086678407e77bb13f43512fc749ec1ec2a4aed243c6c91f7106a8b3b648693"
     }
   },
   "documents": [

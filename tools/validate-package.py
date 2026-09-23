@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a SAF-T Extended 0.4 package without third-party dependencies."""
+"""Validate a SAF-T Extended 0.4 or 0.5 package without third-party dependencies."""
 
 import argparse
 import hashlib
@@ -44,6 +44,13 @@ ORDER_LINE_FIELDS = {
     "id", "sequence", "productId", "description", "quantity", "unitCode",
     "unitPriceExcludingTax", "discountPercent", "amountExcludingTax",
     "taxAmount", "amountIncludingTax",
+}
+DRIVING_LOG_VEHICLE_FIELDS = {"id", "registrationNumber", "name", "accountingMode", "archived"}
+DRIVING_LOG_TRIP_FIELDS = {
+    "id", "vehicleId", "employeeId", "projectId", "date", "fromLocation",
+    "toLocation", "purpose", "kilometers", "odometerStart", "odometerEnd",
+    "accountingMode", "ratePerKilometer", "mileageAmount", "roadTollAmount",
+    "transaction", "createdAt", "updatedAt", "deletedAt",
 }
 ADDRESS_FIELDS = {"line1", "line2", "postalCode", "city", "region", "countryCode"}
 DOCUMENT_TYPES = {
@@ -303,6 +310,53 @@ def validate_order(row, location, errors):
         errors.append(f"{location}.lines: must be ordered by sequence")
 
 
+def validate_driving_log_vehicle(row, location, errors):
+    if not exact_fields(row, DRIVING_LOG_VEHICLE_FIELDS, location, errors):
+        return
+    for field in ("id", "registrationNumber", "name"):
+        if not isinstance(row[field], str) or not row[field]:
+            errors.append(f"{location}.{field}: must be a non-empty string")
+    if row["accountingMode"] not in {"mileage-allowance", "log-only"}:
+        errors.append(f"{location}.accountingMode: invalid value")
+    if not isinstance(row["archived"], bool):
+        errors.append(f"{location}.archived: must be a boolean")
+
+
+def validate_driving_log_trip(row, location, errors):
+    if not exact_fields(row, DRIVING_LOG_TRIP_FIELDS, location, errors):
+        return
+    for field in ("id", "fromLocation", "toLocation", "purpose"):
+        if not isinstance(row[field], str) or not row[field]:
+            errors.append(f"{location}.{field}: must be a non-empty string")
+    for field in ("vehicleId", "employeeId", "projectId"):
+        if not nullable_string(row[field]):
+            errors.append(f"{location}.{field}: must be a string or null")
+    try:
+        date.fromisoformat(row["date"])
+    except (TypeError, ValueError):
+        errors.append(f"{location}.date: invalid ISO date")
+    if row["accountingMode"] not in {"mileage-allowance", "log-only"}:
+        errors.append(f"{location}.accountingMode: invalid value")
+    for field in ("kilometers", "ratePerKilometer", "mileageAmount", "roadTollAmount"):
+        value = row[field]
+        if not nullable_number(value) or value is None or value < 0 or (field == "kilometers" and value == 0):
+            errors.append(f"{location}.{field}: must be a positive number" if field == "kilometers"
+                          else f"{location}.{field}: must be a non-negative number")
+    start, end = row["odometerStart"], row["odometerEnd"]
+    if (start is None) != (end is None) or not nullable_number(start) or not nullable_number(end):
+        errors.append(f"{location}: odometerStart and odometerEnd must both be numbers or null")
+    elif start is not None and (start < 0 or end <= start):
+        errors.append(f"{location}: invalid odometer range")
+    for field in ("createdAt", "updatedAt", "deletedAt"):
+        value = row[field]
+        if value is None and field == "deletedAt":
+            continue
+        try:
+            datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except (AttributeError, TypeError, ValueError):
+            errors.append(f"{location}.{field}: invalid ISO date-time")
+
+
 def validate_jsonl(path, validator, errors):
     try:
         body = path.read_bytes()
@@ -371,6 +425,29 @@ def saf_t_index(path, errors):
     return values
 
 
+def validate_transaction_reference(reference, location, saf_t_indexes, errors):
+    fields = {"safTFile", "journalId", "transactionId", "recordIds"}
+    if not exact_fields(reference, fields, location, errors):
+        return
+    if not isinstance(reference["safTFile"], str) or not isinstance(reference["journalId"], str) or not isinstance(reference["transactionId"], str):
+        errors.append(f"{location}: SAF-T reference identifiers must be strings")
+        return
+    record_ids = reference["recordIds"]
+    if not isinstance(record_ids, list) or any(not isinstance(value, str) for value in record_ids):
+        errors.append(f"{location}.recordIds: must be an array of strings")
+        return
+    candidates = saf_t_indexes.get(reference["safTFile"])
+    if candidates is None:
+        errors.append(f"{location}: unknown SAF-T file")
+        return
+    matching = [records for journal, transaction, records in candidates
+                if (journal, transaction) == (reference["journalId"], reference["transactionId"])]
+    if not matching:
+        errors.append(f"{location}: transaction does not exist in SAF-T")
+    elif not set(record_ids) <= set(matching[0]):
+        errors.append(f"{location}: RecordID does not exist in transaction")
+
+
 def validate_package(root):
     errors = []
     manifest_path = root / "manifest.json"
@@ -380,8 +457,8 @@ def validate_package(root):
         return [f"invalid or missing manifest.json: {exc}"]
     if not exact_fields(manifest, ROOT_FIELDS, "manifest", errors):
         return errors
-    if manifest["format"] != "saf-t-extended" or manifest["version"] != "0.4":
-        errors.append("manifest: expected SAF-T Extended version 0.4")
+    if manifest["format"] != "saf-t-extended" or manifest["version"] not in {"0.4", "0.5"}:
+        errors.append("manifest: expected SAF-T Extended version 0.4 or 0.5")
     try:
         datetime.fromisoformat(str(manifest["createdAt"]).replace("Z", "+00:00"))
     except ValueError:
@@ -417,6 +494,8 @@ def validate_package(root):
         "customers", "suppliers", "employees", "departments", "projects",
         "products", "orders",
     }
+    if manifest["version"] == "0.5":
+        object_names.update({"driving-log-vehicles", "driving-log-trips"})
     if not isinstance(objects, dict):
         errors.append("manifest.objects: must be an object")
     else:
@@ -433,6 +512,8 @@ def validate_package(root):
             "projects": validate_project,
             "products": validate_product,
             "orders": validate_order,
+            "driving-log-vehicles": validate_driving_log_vehicle,
+            "driving-log-trips": validate_driving_log_trip,
         }
         object_rows = {}
         for name in sorted(set(objects) & object_names):
@@ -483,6 +564,21 @@ def validate_package(root):
                         f"orders.jsonl:{index}.lines[{line_index}].productId: "
                         f"unknown products id {product_id!r}"
                     )
+        trip_references = {
+            "vehicleId": "driving-log-vehicles",
+            "employeeId": "employees",
+            "projectId": "projects",
+        }
+        for index, trip in enumerate(object_rows.get("driving-log-trips", []), 1):
+            if not DRIVING_LOG_TRIP_FIELDS <= set(trip):
+                continue
+            location = f"driving-log-trips.jsonl:{index}"
+            for field, target in trip_references.items():
+                value = trip[field]
+                if value is not None and value not in object_ids.get(target, set()):
+                    errors.append(f"{location}.{field}: unknown {target} id {value!r}")
+            if trip["transaction"] is not None:
+                validate_transaction_reference(trip["transaction"], f"{location}.transaction", saf_t_indexes, errors)
 
     documents = manifest["documents"]
     document_hashes = set()
@@ -515,19 +611,7 @@ def validate_package(root):
                 continue
             for ref_index, reference in enumerate(item["transactions"]):
                 ref_location = f"{location}.transactions[{ref_index}]"
-                ref_fields = {"safTFile", "journalId", "transactionId", "recordIds"}
-                if not exact_fields(reference, ref_fields, ref_location, errors):
-                    continue
-                key = (reference["journalId"], reference["transactionId"])
-                candidates = saf_t_indexes.get(reference["safTFile"])
-                if candidates is None:
-                    errors.append(f"{ref_location}: unknown SAF-T file")
-                    continue
-                matching = [records for journal, transaction, records in candidates if (journal, transaction) == key]
-                if not matching:
-                    errors.append(f"{ref_location}: transaction does not exist in SAF-T")
-                elif not set(reference["recordIds"]) <= set(matching[0]):
-                    errors.append(f"{ref_location}: RecordID does not exist in transaction")
+                validate_transaction_reference(reference, ref_location, saf_t_indexes, errors)
 
     extras = manifest["extras"]
     if not isinstance(extras, list):

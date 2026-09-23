@@ -1,4 +1,4 @@
-# SAF-T Extended 0.4
+# SAF-T Extended 0.5
 
 This document is normative.
 
@@ -8,11 +8,12 @@ SAF-T Extended is a portable accounting archive and interchange package, not a
 tax submission format. Official SAF-T Financial XML remains unchanged and is
 the source of truth for accounts, tax codes, dimensions and ledger transactions.
 
-Version 0.4 consists of:
+Version 0.5 consists of:
 
 - predictable customer, supplier, employee, department, project, product and
   sales-order objects
 - original accounting documents
+- driving-log vehicles and trips, including trips without ledger postings
 - document-to-SAF-T transaction links
 - integrity checksums
 
@@ -30,6 +31,8 @@ objects/departments.jsonl  # when non-empty
 objects/projects.jsonl     # when non-empty
 objects/products.jsonl     # when non-empty
 objects/orders.jsonl       # when non-empty
+objects/driving-log-vehicles.jsonl  # when non-empty
+objects/driving-log-trips.jsonl     # when non-empty
 documents/<source documents, optionally grouped by document role and voucher type>
 reports/<optional auditor-friendly CSV views>
 extras/<optional other supplementary files>
@@ -41,7 +44,7 @@ absent when there are no object records. `documents/` may be absent when there
 are no documents. `reports/` and `extras/` may be absent when they have no
 files listed in the always-present `extras` manifest array.
 
-No other files or directories are part of version 0.4. A package containing
+No other files or directories are part of version 0.5. A package containing
 unlisted files is invalid.
 
 ## 3. Manifest
@@ -111,7 +114,7 @@ files are invalid. Exporters must identify the content or fail. HTML fragments
 or diagnostic responses produced by an accounting-system endpoint are not
 accounting documents and are ignored.
 
-The document types in version 0.4 are intentionally small:
+The document types in version 0.5 remain intentionally small:
 
 | Type | Meaning |
 | --- | --- |
@@ -154,6 +157,10 @@ The supported files are:
   [products.schema.json](products.schema.json)
 - `objects/orders.jsonl`, validated by
   [orders.schema.json](orders.schema.json)
+- `objects/driving-log-vehicles.jsonl`, validated by
+  [driving-log-vehicles.schema.json](driving-log-vehicles.schema.json)
+- `objects/driving-log-trips.jsonl`, validated by
+  [driving-log-trips.schema.json](driving-log-trips.schema.json)
 
 An exporter emits a file if and only if it has records. Empty JSONL files are
 invalid because absence expresses the same fact with less ambiguity and fewer
@@ -184,6 +191,16 @@ department, employee or project object file.
 Non-null order references use IDs from the corresponding customer, project,
 department or product object file. Order lines are embedded because their
 meaning, sequence, quantities and amounts are inseparable from the order.
+
+Driving-log vehicle records preserve registration numbers and archived state.
+Driving-log trip records include log-only journeys, trips with mileage vouchers,
+and retained deleted or superseded trips. Their vehicle, employee and project
+IDs refer to the corresponding object files. `transaction` is an exact SAF-T
+reference when a voucher exists and `null` otherwise. A deleted trip may still
+refer to a retained reversal voucher; `deletedAt` preserves that history.
+
+Version 0.4 packages remain valid with their original seven object types. New
+exporters use version 0.5 for the driving-log object types.
 
 The object files duplicate IDs and names from SAF-T only where needed to join
 records and detect conflicts. They define application master data SAF-T does

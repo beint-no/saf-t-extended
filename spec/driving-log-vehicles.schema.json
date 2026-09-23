@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/beint-no/saf-t-extended/main/spec/driving-log-vehicles.schema.json",
+  "title": "SAF-T Extended driving log vehicle record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "registrationNumber", "name", "accountingMode", "archived"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "registrationNumber": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "accountingMode": { "enum": ["mileage-allowance", "log-only"] },
+    "archived": { "type": "boolean" }
+  }
+}

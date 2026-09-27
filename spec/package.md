@@ -1,4 +1,4 @@
-# SAF-T Extended 0.5
+# SAF-T Extended 0.6
 
 This document is normative.
 
@@ -8,12 +8,13 @@ SAF-T Extended is a portable accounting archive and interchange package, not a
 tax submission format. Official SAF-T Financial XML remains unchanged and is
 the source of truth for accounts, tax codes, dimensions and ledger transactions.
 
-Version 0.5 consists of:
+Version 0.6 consists of:
 
 - predictable customer, supplier, employee, department, project, product and
   sales-order objects
 - original accounting documents
 - driving-log vehicles and trips, including trips without ledger postings
+- employee travel and out-of-pocket expenses with costs, mileage, per diem and accommodation allowances
 - document-to-SAF-T transaction links
 - integrity checksums
 
@@ -33,6 +34,7 @@ objects/products.jsonl     # when non-empty
 objects/orders.jsonl       # when non-empty
 objects/driving-log-vehicles.jsonl  # when non-empty
 objects/driving-log-trips.jsonl     # when non-empty
+objects/travel-expenses.jsonl       # when non-empty
 documents/<source documents, optionally grouped by document role and voucher type>
 reports/<optional auditor-friendly CSV views>
 extras/<optional other supplementary files>
@@ -44,7 +46,7 @@ absent when there are no object records. `documents/` may be absent when there
 are no documents. `reports/` and `extras/` may be absent when they have no
 files listed in the always-present `extras` manifest array.
 
-No other files or directories are part of version 0.5. A package containing
+No other files or directories are part of version 0.6. A package containing
 unlisted files is invalid.
 
 ## 3. Manifest
@@ -114,7 +116,7 @@ files are invalid. Exporters must identify the content or fail. HTML fragments
 or diagnostic responses produced by an accounting-system endpoint are not
 accounting documents and are ignored.
 
-The document types in version 0.5 remain intentionally small:
+The document types in version 0.6 remain intentionally small:
 
 | Type | Meaning |
 | --- | --- |
@@ -161,6 +163,8 @@ The supported files are:
   [driving-log-vehicles.schema.json](driving-log-vehicles.schema.json)
 - `objects/driving-log-trips.jsonl`, validated by
   [driving-log-trips.schema.json](driving-log-trips.schema.json)
+- `objects/travel-expenses.jsonl`, validated by
+  [travel-expenses.schema.json](travel-expenses.schema.json)
 
 An exporter emits a file if and only if it has records. Empty JSONL files are
 invalid because absence expresses the same fact with less ambiguity and fewer
@@ -199,8 +203,23 @@ IDs refer to the corresponding object files. `transaction` is an exact SAF-T
 reference when a voucher exists and `null` otherwise. A deleted trip may still
 refer to a retained reversal voucher; `deletedAt` preserves that history.
 
-Version 0.4 packages remain valid with their original seven object types. New
-exporters use version 0.5 for the driving-log object types.
+Travel-expense records include claims whether submitted, approved, rejected or paid.
+One row represents the claim, with costs, mileage, per diem and accommodation
+allowances embedded under their source IDs. Amounts ending in `NOK` are in
+Norwegian kroner; foreign-currency amounts carry an explicit currency code.
+Unknown amounts and details are `null`, not zero. `transactions` contains only
+exact SAF-T voucher references. `documentSourceIds` refers to source IDs in
+either `documents` or `missingDocuments` in the manifest, so an unavailable
+receipt cannot silently disappear. Employee, department and project IDs resolve
+to the corresponding standardized objects. Approval actors and payroll links use
+opaque source IDs because an external accountant may not be a tenant employee.
+Exporters must retrieve line details
+from the source system and reconcile their IDs with the claim's listed lines;
+they must not substitute a summary PDF for machine-readable details.
+
+Version 0.4 packages remain valid with their original seven object types, and
+version 0.5 packages remain valid with driving logs. New exporters use version
+0.6 for travel expenses.
 
 The object files duplicate IDs and names from SAF-T only where needed to join
 records and detect conflicts. They define application master data SAF-T does

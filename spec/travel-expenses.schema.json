@@ -1,0 +1,592 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/beint-no/saf-t-extended/main/spec/travel-expenses.schema.json",
+  "title": "SAF-T Extended travel expense record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "number",
+    "employeeId",
+    "departmentId",
+    "projectId",
+    "date",
+    "title",
+    "purpose",
+    "departureDate",
+    "returnDate",
+    "departureLocation",
+    "destination",
+    "status",
+    "paymentCurrency",
+    "amountNOK",
+    "paymentAmountNOK",
+    "paymentAmountCurrency",
+    "approvedDate",
+    "completedDate",
+    "transactions",
+    "documentSourceIds",
+    "costs",
+    "mileageAllowances",
+    "perDiemAllowances",
+    "accommodationAllowances",
+    "journeyDescription",
+    "departureTime",
+    "returnTime",
+    "foreignTravel",
+    "dayTrip",
+    "travelAdvanceNOK",
+    "chargeableAmountNOK",
+    "vatAmountNOK",
+    "payrollReference",
+    "rejectionReason",
+    "approvedBySourceId",
+    "completedBySourceId"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "employeeId": {
+      "type": "string"
+    },
+    "departmentId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "projectId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "purpose": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "departureDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "returnDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "departureLocation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "destination": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "enum": [
+        "submitted",
+        "approved",
+        "rejected",
+        "paid",
+        "unknown"
+      ]
+    },
+    "paymentCurrency": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Z]{3}$"
+    },
+    "amountNOK": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "paymentAmountNOK": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "paymentAmountCurrency": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "approvedDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "completedDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "transactions": {
+      "type": "array",
+      "items": {
+        "$ref": "manifest.schema.json#/$defs/transactionReference"
+      },
+      "uniqueItems": true
+    },
+    "documentSourceIds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "costs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/cost"
+      }
+    },
+    "mileageAllowances": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/mileage"
+      }
+    },
+    "perDiemAllowances": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/perDiem"
+      }
+    },
+    "accommodationAllowances": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/accommodation"
+      }
+    },
+    "journeyDescription": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "departureTime": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "returnTime": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "foreignTravel": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "dayTrip": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "travelAdvanceNOK": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "chargeableAmountNOK": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "vatAmountNOK": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "payrollReference": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rejectionReason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "approvedBySourceId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "completedBySourceId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "$defs": {
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "date",
+        "description",
+        "category",
+        "paymentMethod",
+        "currency",
+        "amountIncludingTax",
+        "amountNOKIncludingTax",
+        "vatAmountNOK",
+        "exchangeRateToNOK",
+        "paidByEmployee",
+        "chargeable"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "category": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "paymentMethod": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[A-Z]{3}$"
+        },
+        "amountIncludingTax": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "amountNOKIncludingTax": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "vatAmountNOK": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "exchangeRateToNOK": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "paidByEmployee": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "chargeable": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "mileage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "date",
+        "fromLocation",
+        "toLocation",
+        "kilometers",
+        "ratePerKilometer",
+        "amountNOK",
+        "vehicleCategory",
+        "companyCar",
+        "passengerCount",
+        "tollAmountNOK",
+        "passengerSupplementNOK",
+        "trailerSupplementNOK"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "fromLocation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "toLocation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kilometers": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "ratePerKilometer": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "amountNOK": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "vehicleCategory": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "companyCar": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "passengerCount": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "tollAmountNOK": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "passengerSupplementNOK": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "trailerSupplementNOK": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "perDiem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "category",
+        "location",
+        "countryCode",
+        "days",
+        "ratePerDay",
+        "amountNOK",
+        "overnightAccommodation",
+        "breakfastDeducted",
+        "lunchDeducted",
+        "dinnerDeducted"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "category": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "location": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "countryCode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[A-Z]{2}$"
+        },
+        "days": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "ratePerDay": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "amountNOK": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "overnightAccommodation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "breakfastDeducted": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "lunchDeducted": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "dinnerDeducted": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "accommodation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "category",
+        "location",
+        "nights",
+        "ratePerNight",
+        "amountNOK"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "category": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "location": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "nights": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "ratePerNight": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "amountNOK": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

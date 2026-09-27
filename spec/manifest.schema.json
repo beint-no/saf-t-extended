@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/beint-no/saf-t-extended/main/spec/manifest.schema.json",
-  "title": "SAF-T Extended 0.4 and 0.5 manifest",
+  "title": "SAF-T Extended 0.4, 0.5 and 0.6 manifest",
   "type": "object",
   "additionalProperties": false,
   "required": ["format", "version", "createdAt", "exporter", "sourceSystem", "company", "period", "safT", "objects", "documents", "extras", "missingDocuments"],
   "properties": {
     "format": { "const": "saf-t-extended" },
-    "version": { "enum": ["0.4", "0.5"] },
+    "version": { "enum": ["0.4", "0.5", "0.6"] },
     "createdAt": { "type": "string", "format": "date-time" },
     "exporter": { "$ref": "#/$defs/exporter" },
     "sourceSystem": { "$ref": "#/$defs/sourceSystem" },
@@ -32,6 +32,14 @@
               ]
             }
           }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "version": { "enum": ["0.4", "0.5"] } } },
+      "then": {
+        "properties": {
+          "objects": { "not": { "required": ["travel-expenses"] } }
         }
       }
     }
@@ -96,7 +104,8 @@
         "products": { "$ref": "#/$defs/objectFile" },
         "orders": { "$ref": "#/$defs/objectFile" },
         "driving-log-vehicles": { "$ref": "#/$defs/objectFile" },
-        "driving-log-trips": { "$ref": "#/$defs/objectFile" }
+        "driving-log-trips": { "$ref": "#/$defs/objectFile" },
+        "travel-expenses": { "$ref": "#/$defs/objectFile" }
       }
     },
     "objectFile": {

@@ -7,12 +7,12 @@ It combines four things:
 1. official SAF-T Financial XML for the ledger
 2. original accounting documents
 3. small JSONL files for customers, suppliers, employees, departments,
-   projects, products, sales orders and driving logs
+   projects, products, sales orders, driving logs and travel expenses
 4. one manifest containing checksums, document-to-transaction links and any
    source documents the exporting system could not return
 
-Version 0.5 defines nine portable object schemas, adding driving-log vehicles
-and trips to the seven version 0.4 objects. Exporters may
+Version 0.6 defines ten portable object schemas, adding travel expenses to the
+nine version 0.5 objects. Exporters may
 also include integrity-listed supplementary files under `reports/` or `extras/`;
 those files have no standardized meaning and conforming importers may ignore them.
 
@@ -20,7 +20,7 @@ those files have no standardized meaning and conforming importers may ignore the
 
 SAF-T is the right interchange format for accounts, tax codes, dimensions and
 ledger transactions. It is less suitable as a simple application import format
-for operational master data, sales orders and driving-log evidence, and it does
+for operational master data, sales orders, travel claims and driving-log evidence, and it does
 not carry the source files behind the postings.
 
 SAF-T Extended fills only those two gaps. It does not replace or modify SAF-T.
@@ -40,6 +40,7 @@ objects/
   orders.jsonl       # when non-empty
   driving-log-vehicles.jsonl  # when non-empty
   driving-log-trips.jsonl     # when non-empty
+  travel-expenses.jsonl       # when non-empty
 documents/
 reports/             # optional auditor-friendly CSV views
 extras/              # optional other supplementary files
@@ -68,7 +69,7 @@ format.
 
 ## Implementer
 
-[ReAI](https://reai.no) is the only listed implementer of version 0.5. See
+[ReAI](https://reai.no) is the only listed implementer of version 0.6. See
 [IMPLEMENTERS.md](IMPLEMENTERS.md).
 
 ## Design principles

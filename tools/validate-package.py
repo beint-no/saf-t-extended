@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a SAF-T Extended 0.4 or 0.5 package without third-party dependencies."""
+"""Validate a SAF-T Extended package without third-party dependencies."""
 
 import argparse
 import hashlib
@@ -51,6 +51,37 @@ DRIVING_LOG_TRIP_FIELDS = {
     "toLocation", "purpose", "kilometers", "odometerStart", "odometerEnd",
     "accountingMode", "ratePerKilometer", "mileageAmount", "roadTollAmount",
     "transaction", "createdAt", "updatedAt", "deletedAt",
+}
+TRAVEL_EXPENSE_FIELDS = {
+    "id", "number", "employeeId", "departmentId", "projectId", "date",
+    "title", "purpose", "departureDate", "returnDate", "departureLocation",
+    "destination", "status", "paymentCurrency", "amountNOK",
+    "paymentAmountNOK", "paymentAmountCurrency", "approvedDate", "completedDate",
+    "transactions", "documentSourceIds", "costs", "mileageAllowances",
+    "perDiemAllowances", "accommodationAllowances",
+    "journeyDescription", "departureTime", "returnTime", "foreignTravel",
+    "dayTrip", "travelAdvanceNOK", "chargeableAmountNOK", "vatAmountNOK",
+    "approvedBySourceId", "completedBySourceId", "payrollReference",
+    "rejectionReason",
+}
+TRAVEL_COST_FIELDS = {
+    "id", "date", "description", "category", "paymentMethod", "currency",
+    "amountIncludingTax", "amountNOKIncludingTax", "vatAmountNOK",
+    "exchangeRateToNOK", "paidByEmployee", "chargeable",
+}
+TRAVEL_MILEAGE_FIELDS = {
+    "id", "date", "fromLocation", "toLocation", "kilometers",
+    "ratePerKilometer", "amountNOK", "vehicleCategory", "companyCar",
+    "passengerCount", "tollAmountNOK", "passengerSupplementNOK",
+    "trailerSupplementNOK",
+}
+TRAVEL_PER_DIEM_FIELDS = {
+    "id", "category", "location", "countryCode", "days", "ratePerDay",
+    "amountNOK", "overnightAccommodation", "breakfastDeducted",
+    "lunchDeducted", "dinnerDeducted",
+}
+TRAVEL_ACCOMMODATION_FIELDS = {
+    "id", "category", "location", "nights", "ratePerNight", "amountNOK",
 }
 ADDRESS_FIELDS = {"line1", "line2", "postalCode", "city", "region", "countryCode"}
 DOCUMENT_TYPES = {
@@ -357,6 +388,89 @@ def validate_driving_log_trip(row, location, errors):
             errors.append(f"{location}.{field}: invalid ISO date-time")
 
 
+def validate_travel_expense(row, location, errors):
+    if not exact_fields(row, TRAVEL_EXPENSE_FIELDS, location, errors):
+        return
+    for field in ("id", "employeeId"):
+        if not isinstance(row[field], str) or not row[field]:
+            errors.append(f"{location}.{field}: must be a non-empty string")
+    for field in (
+        "number", "departmentId", "projectId", "title", "purpose",
+        "departureLocation", "destination", "paymentCurrency",
+        "journeyDescription", "departureTime", "returnTime",
+        "approvedBySourceId", "completedBySourceId", "payrollReference",
+        "rejectionReason",
+    ):
+        if not nullable_string(row[field]):
+            errors.append(f"{location}.{field}: must be a string or null")
+    for field in ("date", "departureDate", "returnDate", "approvedDate", "completedDate"):
+        value = row[field]
+        if value is None and field != "date":
+            continue
+        try:
+            date.fromisoformat(value)
+        except (TypeError, ValueError):
+            errors.append(f"{location}.{field}: invalid ISO date")
+    if row["status"] not in {"submitted", "approved", "rejected", "paid", "unknown"}:
+        errors.append(f"{location}.status: invalid value")
+    for field in ("amountNOK", "paymentAmountNOK", "paymentAmountCurrency", "travelAdvanceNOK", "chargeableAmountNOK", "vatAmountNOK"):
+        if not nullable_number(row[field]):
+            errors.append(f"{location}.{field}: must be a number or null")
+    for field in ("foreignTravel", "dayTrip"):
+        if row[field] is not None and not isinstance(row[field], bool):
+            errors.append(f"{location}.{field}: must be a boolean or null")
+    if not isinstance(row["transactions"], list):
+        errors.append(f"{location}.transactions: must be an array")
+    if not isinstance(row["documentSourceIds"], list) or any(
+        not isinstance(value, str) or not value for value in row["documentSourceIds"]
+    ):
+        errors.append(f"{location}.documentSourceIds: must contain non-empty strings")
+    line_fields = {
+        "costs": (TRAVEL_COST_FIELDS, {"paidByEmployee", "chargeable"}, {"date"}),
+        "mileageAllowances": (TRAVEL_MILEAGE_FIELDS, {"companyCar"}, {"date"}),
+        "perDiemAllowances": (TRAVEL_PER_DIEM_FIELDS, {"breakfastDeducted", "lunchDeducted", "dinnerDeducted"}, set()),
+        "accommodationAllowances": (TRAVEL_ACCOMMODATION_FIELDS, set(), set()),
+    }
+    for group, (fields, booleans, dates) in line_fields.items():
+        lines = row[group]
+        if not isinstance(lines, list):
+            errors.append(f"{location}.{group}: must be an array")
+            continue
+        ids = []
+        for index, line in enumerate(lines, 1):
+            line_location = f"{location}.{group}[{index}]"
+            if not exact_fields(line, fields, line_location, errors):
+                continue
+            if not isinstance(line["id"], str) or not line["id"]:
+                errors.append(f"{line_location}.id: must be a non-empty string")
+            else:
+                ids.append(line["id"])
+            for field in fields - {"id"}:
+                value = line[field]
+                if field in dates:
+                    if value is not None:
+                        try:
+                            date.fromisoformat(value)
+                        except (TypeError, ValueError):
+                            errors.append(f"{line_location}.{field}: invalid ISO date")
+                elif field in booleans:
+                    if value is not None and not isinstance(value, bool):
+                        errors.append(f"{line_location}.{field}: must be a boolean or null")
+                elif field in {
+                    "amountIncludingTax", "amountNOKIncludingTax", "vatAmountNOK",
+                    "exchangeRateToNOK", "kilometers", "ratePerKilometer",
+                    "amountNOK", "passengerCount", "tollAmountNOK", "days",
+                    "ratePerDay", "nights", "ratePerNight",
+                    "passengerSupplementNOK", "trailerSupplementNOK",
+                }:
+                    if not nullable_number(value):
+                        errors.append(f"{line_location}.{field}: must be a number or null")
+                elif not nullable_string(value):
+                    errors.append(f"{line_location}.{field}: must be a string or null")
+        if ids != sorted(ids) or len(ids) != len(set(ids)):
+            errors.append(f"{location}.{group}: IDs must be unique and sorted")
+
+
 def validate_jsonl(path, validator, errors):
     try:
         body = path.read_bytes()
@@ -457,8 +571,8 @@ def validate_package(root):
         return [f"invalid or missing manifest.json: {exc}"]
     if not exact_fields(manifest, ROOT_FIELDS, "manifest", errors):
         return errors
-    if manifest["format"] != "saf-t-extended" or manifest["version"] not in {"0.4", "0.5"}:
-        errors.append("manifest: expected SAF-T Extended version 0.4 or 0.5")
+    if manifest["format"] != "saf-t-extended" or manifest["version"] not in {"0.4", "0.5", "0.6"}:
+        errors.append("manifest: expected SAF-T Extended version 0.4, 0.5 or 0.6")
     try:
         datetime.fromisoformat(str(manifest["createdAt"]).replace("Z", "+00:00"))
     except ValueError:
@@ -494,8 +608,10 @@ def validate_package(root):
         "customers", "suppliers", "employees", "departments", "projects",
         "products", "orders",
     }
-    if manifest["version"] == "0.5":
+    if manifest["version"] in {"0.5", "0.6"}:
         object_names.update({"driving-log-vehicles", "driving-log-trips"})
+    if manifest["version"] == "0.6":
+        object_names.add("travel-expenses")
     if not isinstance(objects, dict):
         errors.append("manifest.objects: must be an object")
     else:
@@ -514,6 +630,7 @@ def validate_package(root):
             "orders": validate_order,
             "driving-log-vehicles": validate_driving_log_vehicle,
             "driving-log-trips": validate_driving_log_trip,
+            "travel-expenses": validate_travel_expense,
         }
         object_rows = {}
         for name in sorted(set(objects) & object_names):
@@ -579,6 +696,17 @@ def validate_package(root):
                     errors.append(f"{location}.{field}: unknown {target} id {value!r}")
             if trip["transaction"] is not None:
                 validate_transaction_reference(trip["transaction"], f"{location}.transaction", saf_t_indexes, errors)
+        for index, expense in enumerate(object_rows.get("travel-expenses", []), 1):
+            if not TRAVEL_EXPENSE_FIELDS <= set(expense):
+                continue
+            location = f"travel-expenses.jsonl:{index}"
+            for field, target in (("employeeId", "employees"), ("departmentId", "departments"), ("projectId", "projects")):
+                value = expense[field]
+                if value is not None and value not in object_ids.get(target, set()):
+                    errors.append(f"{location}.{field}: unknown {target} id {value!r}")
+            if isinstance(expense["transactions"], list):
+                for reference_index, reference in enumerate(expense["transactions"]):
+                    validate_transaction_reference(reference, f"{location}.transactions[{reference_index}]", saf_t_indexes, errors)
 
     documents = manifest["documents"]
     document_hashes = set()
@@ -644,6 +772,17 @@ def validate_package(root):
             errors.append("manifest.missingDocuments: must be sorted by sourceId")
         if len(missing_ids) != len(set(missing_ids)):
             errors.append("manifest.missingDocuments: duplicate sourceId")
+
+    known_document_ids = source_ids | set(missing_ids if isinstance(missing_documents, list) else [])
+    for index, expense in enumerate(object_rows.get("travel-expenses", []), 1) if isinstance(objects, dict) else ():
+        references = expense.get("documentSourceIds")
+        if not isinstance(references, list):
+            continue
+        if all(isinstance(reference, str) for reference in references) and len(references) != len(set(references)):
+            errors.append(f"travel-expenses.jsonl:{index}.documentSourceIds: duplicate source ID")
+        for reference in references:
+            if isinstance(reference, str) and reference not in known_document_ids:
+                errors.append(f"travel-expenses.jsonl:{index}.documentSourceIds: unknown source ID {reference!r}")
 
     actual = {
         path.relative_to(root).as_posix()

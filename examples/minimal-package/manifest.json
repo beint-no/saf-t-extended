@@ -1,6 +1,6 @@
 {
   "format": "saf-t-extended",
-  "version": "0.5",
+  "version": "0.6",
   "createdAt": "2026-07-09T00:00:00Z",
   "exporter": {
     "name": "ReAI",
@@ -53,6 +53,9 @@
     },
     "driving-log-trips": {
       "sha256": "57086678407e77bb13f43512fc749ec1ec2a4aed243c6c91f7106a8b3b648693"
+    },
+    "travel-expenses": {
+      "sha256": "0f3b9748fde51c22a34f04e9ac3a45efc6f4532e57d1aa3e1f35f4306d2ce703"
     }
   },
   "documents": [

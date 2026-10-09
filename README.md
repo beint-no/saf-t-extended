@@ -54,10 +54,11 @@ always present and is an empty array when every discovered document was exported
 
 The normative rules are in [spec/package.md](spec/package.md). JSON Schemas are
 in [`spec/`](spec/), and [`examples/minimal-package/`](examples/minimal-package/)
-is a complete package that passes the validator:
+is a complete package that passes the validator, which runs on Python 3.15 through
+[uv](https://docs.astral.sh/uv/):
 
 ```sh
-python3 tools/validate-package.py examples/minimal-package
+tools/validate-package.py examples/minimal-package
 ```
 
 ## Distribution

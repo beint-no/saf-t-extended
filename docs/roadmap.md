@@ -1,7 +1,7 @@
 # Roadmap
 
-Version 0.4 defines customers, suppliers, employees, departments, projects,
-products and sales orders.
+Version 0.6 defines customers, suppliers, employees, departments, projects,
+products, sales orders, driving-log vehicles and trips, and travel expenses.
 
 Candidates are ranked by the accounting state an importer would otherwise lose:
 

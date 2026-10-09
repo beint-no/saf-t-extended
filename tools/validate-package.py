@@ -1,4 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.15"
+# ///
 """Validate a SAF-T Extended package without third-party dependencies."""
 
 import argparse
@@ -91,11 +94,8 @@ DOCUMENT_TYPES = {
 
 
 def sha256(path):
-    digest = hashlib.sha256()
     with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+        return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
 def exact_fields(value, expected, location, errors):

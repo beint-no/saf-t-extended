@@ -31,8 +31,20 @@
       <Account>
         <AccountID>2400</AccountID>
         <AccountDescription>Suppliers</AccountDescription>
-        <GroupingCategory>RF-1167</GroupingCategory>
-        <GroupingCode>7900</GroupingCode>
+        <GroupingCategory>kortsiktigGjeld</GroupingCategory>
+        <GroupingCode>2400</GroupingCode>
+        <AccountType>GL</AccountType>
+        <OpeningCreditBalance>0.00</OpeningCreditBalance>
+        <ClosingCreditBalance>100.00</ClosingCreditBalance>
+      </Account>
+      <Account>
+        <AccountID>4000</AccountID>
+        <AccountDescription>Purchases</AccountDescription>
+        <GroupingCategory>varekostnad</GroupingCategory>
+        <GroupingCode>4005</GroupingCode>
+        <AccountType>GL</AccountType>
+        <OpeningDebitBalance>0.00</OpeningDebitBalance>
+        <ClosingDebitBalance>100.00</ClosingDebitBalance>
       </Account>
     </GeneralLedgerAccounts>
     <Customers>
@@ -75,21 +87,26 @@
     <Journal>
       <JournalID>GL</JournalID>
       <Description>General ledger</Description>
+      <Type>GL</Type>
       <Transaction>
         <TransactionID>1001</TransactionID>
         <Period>1</Period>
         <PeriodYear>2026</PeriodYear>
         <TransactionDate>2026-01-15</TransactionDate>
         <Description>Supplier invoice INV-1001</Description>
+        <SystemEntryDate>2026-01-15</SystemEntryDate>
+        <GLPostingDate>2026-01-15</GLPostingDate>
         <SystemID>voucher:1001</SystemID>
         <Line>
           <RecordID>1</RecordID>
           <AccountID>2400</AccountID>
+          <Description>Supplier invoice INV-1001</Description>
           <CreditAmount><Amount>100.00</Amount></CreditAmount>
         </Line>
         <Line>
           <RecordID>2</RecordID>
           <AccountID>4000</AccountID>
+          <Description>Supplier invoice INV-1001</Description>
           <DebitAmount><Amount>100.00</Amount></DebitAmount>
         </Line>
       </Transaction>

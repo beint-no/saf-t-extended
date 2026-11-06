@@ -383,7 +383,7 @@ def validate_driving_log_trip(row, location, errors):
         if value is None and field == "deletedAt":
             continue
         try:
-            datetime.fromisoformat(value.replace("Z", "+00:00"))
+            datetime.fromisoformat(value)
         except (AttributeError, TypeError, ValueError):
             errors.append(f"{location}.{field}: invalid ISO date-time")
 
@@ -574,7 +574,7 @@ def validate_package(root):
     if manifest["format"] != "saf-t-extended" or manifest["version"] not in {"0.4", "0.5", "0.6"}:
         errors.append("manifest: expected SAF-T Extended version 0.4, 0.5 or 0.6")
     try:
-        datetime.fromisoformat(str(manifest["createdAt"]).replace("Z", "+00:00"))
+        datetime.fromisoformat(str(manifest["createdAt"]))
     except ValueError:
         errors.append("manifest.createdAt: invalid ISO date-time")
     exact_fields(manifest["exporter"], {"name", "url", "software"}, "manifest.exporter", errors)
